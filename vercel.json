@@ -1,11 +1,22 @@
 {
-  "outputDirectory": "dist/client",
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist/client" }
+    },
+    { "src": "api/server.js", "use": "@vercel/node" }
+  ],
   "functions": {
     "api/server.js": {
       "runtime": "nodejs20.x",
       "maxDuration": 30
     }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api/server" }]
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/server" }
+  ]
 }
 
