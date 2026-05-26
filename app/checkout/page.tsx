@@ -5,7 +5,6 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
-import { processCheckoutSuccessAction, type CheckoutFormData } from "@/app/actions/checkout";
 import { trackPaymentSuccess } from "@/lib/analytics";
 
 function formatCurrency(amount: number) {
@@ -21,7 +20,7 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [isProcessing, setIsProcessing] = useState(false);
-  const [formData, setFormData] = useState<CheckoutFormData>({
+  const [formData, setFormData] = useState({
     email: "",
     firstName: "",
     lastName: "",
@@ -48,7 +47,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: cartTotal }),
+        body: JSON.stringify({ cartItems, formData }),
       });
 
       const order = await res.json();
@@ -56,7 +55,7 @@ export default function CheckoutPage() {
 
       // 2. Initialize Razorpay
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC if you expose key on client, or leave blank to let backend handle, wait Razorpay JS requires the public key here. Wait, I should add NEXT_PUBLIC_RAZORPAY_KEY_ID to the plan or just use it.
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         name: "Livaara",
@@ -67,36 +66,20 @@ export default function CheckoutPage() {
           razorpay_order_id: string;
         }) {
           try {
-            // 3. Process Checkout Success
-            const result = await processCheckoutSuccessAction(
-              response.razorpay_payment_id,
-              response.razorpay_order_id,
-              cartItems,
-              cartTotal,
-              formData,
-            );
+            // Webhook handles the actual database update and emails asynchronously
+            trackPaymentSuccess(order.internalOrderId, order.amount / 100);
 
-            if (result.ok) {
-              // Payment processed & order successfully created in our DB
-              if (result.orderId) {
-                trackPaymentSuccess(result.orderId, cartTotal);
-              }
-
-              if (result.orderNumber) {
-                toggleCart(false);
-                router.push(
-                  `/order-success?id=${result.orderId}&order_number=${result.orderNumber}`,
-                );
-              } else {
-                toggleCart(false);
-                router.push(`/order-success?id=${result.orderId}`);
-              }
+            toggleCart(false);
+            if (order.internalOrderNumber) {
+              router.push(
+                `/order-success?id=${order.internalOrderId}&order_number=${order.internalOrderNumber}`,
+              );
             } else {
-              alert("Payment verified but order creation failed: " + result.error);
+              router.push(`/order-success?id=${order.internalOrderId}`);
             }
           } catch (err) {
-            console.error("Order fulfillment error:", err);
-            alert("An error occurred while fulfilling your order.");
+            console.error("Order redirect error:", err);
+            alert("Payment successful! Redirecting to your order.");
           }
         },
         prefill: {
