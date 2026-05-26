@@ -18,25 +18,25 @@ The platform exists to convert cold traffic into paying customers through a high
 
 ### Frontend Architecture
 
-| Layer | Implementation |
-| :--- | :--- |
-| **Framework** | Next.js 15.5.18 (App Router) |
-| **Rendering** | Hybrid — Server Components for data fetching, Client Components for interactivity |
-| **Styling** | Tailwind CSS 4.2.1 with a strict design system: Warm beige `#F8F5F0`, charcoal `stone-900`, gold `#C8A96A` |
-| **Typography** | Google Fonts: Cormorant Garamond (serif headings), Inter (sans body) |
-| **State** | React Context (`CartContext.tsx`) for global cart state |
-| **Analytics** | Google Analytics 4 via `@next/third-parties/google` (Measurement ID: `G-NBTSBFJ2NE`) |
+| Layer          | Implementation                                                                                             |
+| :------------- | :--------------------------------------------------------------------------------------------------------- |
+| **Framework**  | Next.js 15.5.18 (App Router)                                                                               |
+| **Rendering**  | Hybrid — Server Components for data fetching, Client Components for interactivity                          |
+| **Styling**    | Tailwind CSS 4.2.1 with a strict design system: Warm beige `#F8F5F0`, charcoal `stone-900`, gold `#C8A96A` |
+| **Typography** | Google Fonts: Cormorant Garamond (serif headings), Inter (sans body)                                       |
+| **State**      | React Context (`CartContext.tsx`) for global cart state                                                    |
+| **Analytics**  | Google Analytics 4 via `@next/third-parties/google` (Measurement ID: `G-NBTSBFJ2NE`)                       |
 
 ### Backend Architecture
 
-| Layer | Implementation |
-| :--- | :--- |
-| **Database** | Supabase (hosted PostgreSQL) |
-| **Auth** | Supabase Auth with JWT cookies, enforced via Next.js Middleware on `/admin/*` |
-| **Server Logic** | Next.js Server Actions (`app/actions/`) and Route Handlers (`app/api/`) |
-| **Payments** | Razorpay (currently Test Mode) |
-| **Emails** | Resend (currently sandbox sender `onboarding@resend.dev`) |
-| **DB Client** | Service Role client (`lib/supabase/admin.ts`) for all mutations — bypasses RLS |
+| Layer            | Implementation                                                                 |
+| :--------------- | :----------------------------------------------------------------------------- |
+| **Database**     | Supabase (hosted PostgreSQL)                                                   |
+| **Auth**         | Supabase Auth with JWT cookies, enforced via Next.js Middleware on `/admin/*`  |
+| **Server Logic** | Next.js Server Actions (`app/actions/`) and Route Handlers (`app/api/`)        |
+| **Payments**     | Razorpay (currently Test Mode)                                                 |
+| **Emails**       | Resend (currently sandbox sender `onboarding@resend.dev`)                      |
+| **DB Client**    | Service Role client (`lib/supabase/admin.ts`) for all mutations — bypasses RLS |
 
 ### Deployment Model
 
@@ -54,46 +54,46 @@ The platform exists to convert cold traffic into paying customers through a high
 
 ### ✅ Working Systems (Stable & Operational)
 
-| System | Details |
-| :--- | :--- |
-| **Landing Page** | Full luxury storefront: Hero, Ingredients, Process, Ritual, Before/After, Testimonials, UGC Video Carousel, Final CTA, Footer |
-| **Product Detail Page** | Hero split-screen, ingredient spotlight, ritual section, dynamic review display |
-| **Cart Drawer** | Slide-out drawer via `CartContext`, quantity controls, subtotal calculation |
-| **Checkout Page** | Full shipping form with Razorpay JS integration, form validation |
-| **Backend Price Validation** | `POST /api/checkout/razorpay` — validates product IDs, checks `is_active`, verifies inventory, calculates total server-side |
-| **Razorpay Webhook** | `POST /api/checkout/razorpay-webhook` — HMAC signature verification, idempotent order fulfillment, atomic inventory decrement via RPC |
-| **Order Success Page** | Confirmation display with order number |
-| **Admin Auth** | Supabase Auth login, middleware-protected routes, session-guarded Server Actions |
-| **Admin Dashboard** | Metrics overview (revenue, order count, inventory, 30-day trend) |
-| **Order Management** | Orders table, detail drawer, status progression (processing → shipped → delivered), full order editing (status, payment, amounts, address, customer info, line items) |
-| **Manual Order Creation** | Admin drawer for offline/phone orders with inventory validation and RPC decrement |
-| **Customer CRM** | Customer directory with total orders/spend, edit drawer, delete (with order dependency check) |
-| **Inventory Management** | Product table with inline inventory count editing |
-| **Review Moderation** | Table with approve/reject actions, status badges, verified buyer indicators |
-| **Invoice Generation** | Print-optimized invoice page at `/admin/invoice/[id]` with `@media print` directives |
-| **Google Analytics** | GA4 loaded in root layout, event helpers for `shop_now_clicked`, `checkout_started`, `payment_success`, `whatsapp_clicked`, `invoice_generated` |
-| **Transactional Emails** | Customer receipt and admin notification templates via Resend, triggered from webhook |
-| **Responsive UI** | Mobile-first layouts across storefront and admin |
+| System                       | Details                                                                                                                                                               |
+| :--------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Landing Page**             | Full luxury storefront: Hero, Ingredients, Process, Ritual, Before/After, Testimonials, UGC Video Carousel, Final CTA, Footer                                         |
+| **Product Detail Page**      | Hero split-screen, ingredient spotlight, ritual section, dynamic review display                                                                                       |
+| **Cart Drawer**              | Slide-out drawer via `CartContext`, quantity controls, subtotal calculation                                                                                           |
+| **Checkout Page**            | Full shipping form with Razorpay JS integration, form validation                                                                                                      |
+| **Backend Price Validation** | `POST /api/checkout/razorpay` — validates product IDs, checks `is_active`, verifies inventory, calculates total server-side                                           |
+| **Razorpay Webhook**         | `POST /api/checkout/razorpay-webhook` — HMAC signature verification, idempotent order fulfillment, atomic inventory decrement via RPC                                 |
+| **Order Success Page**       | Confirmation display with order number                                                                                                                                |
+| **Admin Auth**               | Supabase Auth login, middleware-protected routes, session-guarded Server Actions                                                                                      |
+| **Admin Dashboard**          | Metrics overview (revenue, order count, inventory, 30-day trend)                                                                                                      |
+| **Order Management**         | Orders table, detail drawer, status progression (processing → shipped → delivered), full order editing (status, payment, amounts, address, customer info, line items) |
+| **Manual Order Creation**    | Admin drawer for offline/phone orders with inventory validation and RPC decrement                                                                                     |
+| **Customer CRM**             | Customer directory with total orders/spend, edit drawer, delete (with order dependency check)                                                                         |
+| **Inventory Management**     | Product table with inline inventory count editing                                                                                                                     |
+| **Review Moderation**        | Table with approve/reject actions, status badges, verified buyer indicators                                                                                           |
+| **Invoice Generation**       | Print-optimized invoice page at `/admin/invoice/[id]` with `@media print` directives                                                                                  |
+| **Google Analytics**         | GA4 loaded in root layout, event helpers for `shop_now_clicked`, `checkout_started`, `payment_success`, `whatsapp_clicked`, `invoice_generated`                       |
+| **Transactional Emails**     | Customer receipt and admin notification templates via Resend, triggered from webhook                                                                                  |
+| **Responsive UI**            | Mobile-first layouts across storefront and admin                                                                                                                      |
 
 ### ⚠️ Partially Complete Systems
 
-| System | Issue |
-| :--- | :--- |
-| **Review Submission** | The `ReviewFormModal.tsx` and `submitReview` Server Action exist and compile, but the frontend `Review` type (`customer_name`, `comment`, `status`) does not match the database migration schema (`customer_id`, `review_text`, `is_approved`). Inserts will fail at runtime against the actual Supabase table. |
-| **Admin Review Actions** | `app/admin/actions.ts` exports `approveReviewAction` which sets `is_approved = true` (matching the DB schema), but `ReviewsModeration.tsx` uses `updateReviewStatus` from `app/actions/reviews.ts` which sets `status = 'approved'` (a column that does not exist in the migration). Both code paths exist simultaneously. |
-| **Email Delivery** | Templates render correctly, but all emails send from `onboarding@resend.dev` which only delivers to the Resend account owner's email address. Customer-facing emails will silently fail. |
-| **Cart Initialization** | `CartContext.tsx` initializes with a `DEFAULT_ITEM` containing hardcoded UUID `00000000-0000-0000-0000-000000000001`. If this UUID does not match a real product in the database, checkout will fail. |
-| **Row Level Security** | RLS is enabled on all tables in the migration, but only `products_public_read` and `reviews_public_read` policies exist. There are no insert/update/delete policies for any table. All mutations work only because they use the **service role** client which bypasses RLS entirely. If the service role key is ever compromised or if anon-key routes are added, there is zero protection. |
+| System                   | Issue                                                                                                                                                                                                                                                                                                                                                                                       |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Review Submission**    | The `ReviewFormModal.tsx` and `submitReview` Server Action exist and compile, but the frontend `Review` type (`customer_name`, `comment`, `status`) does not match the database migration schema (`customer_id`, `review_text`, `is_approved`). Inserts will fail at runtime against the actual Supabase table.                                                                             |
+| **Admin Review Actions** | `app/admin/actions.ts` exports `approveReviewAction` which sets `is_approved = true` (matching the DB schema), but `ReviewsModeration.tsx` uses `updateReviewStatus` from `app/actions/reviews.ts` which sets `status = 'approved'` (a column that does not exist in the migration). Both code paths exist simultaneously.                                                                  |
+| **Email Delivery**       | Templates render correctly, but all emails send from `onboarding@resend.dev` which only delivers to the Resend account owner's email address. Customer-facing emails will silently fail.                                                                                                                                                                                                    |
+| **Cart Initialization**  | `CartContext.tsx` initializes with a `DEFAULT_ITEM` containing hardcoded UUID `00000000-0000-0000-0000-000000000001`. If this UUID does not match a real product in the database, checkout will fail.                                                                                                                                                                                       |
+| **Row Level Security**   | RLS is enabled on all tables in the migration, but only `products_public_read` and `reviews_public_read` policies exist. There are no insert/update/delete policies for any table. All mutations work only because they use the **service role** client which bypasses RLS entirely. If the service role key is ever compromised or if anon-key routes are added, there is zero protection. |
 
 ### 🔴 Placeholder / Test Systems
 
-| System | Details |
-| :--- | :--- |
-| **Razorpay Keys** | Test mode only (`rzp_test_*`). Cannot process real transactions. |
-| **UGC Videos** | 4 placeholder MP4 URLs from `mixkit.co` in `ShoppableVideoCarousel.tsx`. Not brand content. |
-| **Product Images** | No real product photography. Hero image is a placeholder/fallback. |
-| **Shipping & Tax** | Hardcoded to ₹0. Cart says "Shipping & taxes calculated at checkout" but checkout does nothing. |
-| **`FALLBACK_HERO_PRODUCT`** | `lib/products.ts` contains a static product object with fake UUID used when Supabase is unavailable. |
+| System                           | Details                                                                                                                   |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| **Razorpay Keys**                | Test mode only (`rzp_test_*`). Cannot process real transactions.                                                          |
+| **UGC Videos**                   | 4 placeholder MP4 URLs from `mixkit.co` in `ShoppableVideoCarousel.tsx`. Not brand content.                               |
+| **Product Images**               | No real product photography. Hero image is a placeholder/fallback.                                                        |
+| **Shipping & Tax**               | Hardcoded to ₹0. Cart says "Shipping & taxes calculated at checkout" but checkout does nothing.                           |
+| **`FALLBACK_HERO_PRODUCT`**      | `lib/products.ts` contains a static product object with fake UUID used when Supabase is unavailable.                      |
 | **Video Carousel "Add to Cart"** | Uses hardcoded UUID `00000000-0000-0000-0000-000000000001` — will crash checkout if this product doesn't exist in the DB. |
 
 ---
@@ -110,63 +110,68 @@ reviews ─────┘ (has customer_id FK, but frontend uses customer_name 
 ```
 
 #### `customers`
-| Column | Type | Notes |
-| :--- | :--- | :--- |
-| `id` | UUID PK | Auto-generated |
-| `name` | TEXT NOT NULL | |
-| `email` | TEXT | Unique index on `lower(email)`, regex-validated |
-| `phone` | TEXT | Indexed where not null |
-| `created_at` | TIMESTAMPTZ | |
+
+| Column       | Type          | Notes                                           |
+| :----------- | :------------ | :---------------------------------------------- |
+| `id`         | UUID PK       | Auto-generated                                  |
+| `name`       | TEXT NOT NULL |                                                 |
+| `email`      | TEXT          | Unique index on `lower(email)`, regex-validated |
+| `phone`      | TEXT          | Indexed where not null                          |
+| `created_at` | TIMESTAMPTZ   |                                                 |
 
 #### `products`
-| Column | Type | Notes |
-| :--- | :--- | :--- |
-| `id` | UUID PK | |
-| `name` | TEXT NOT NULL | |
-| `description` | TEXT | Default `''` |
-| `price` | NUMERIC(10,2) | CHECK `>= 0` |
-| `inventory_count` | INTEGER | CHECK `>= 0` |
-| `is_active` | BOOLEAN | Default `true`, indexed |
-| `created_at`, `updated_at` | TIMESTAMPTZ | `updated_at` auto-trigger |
+
+| Column                     | Type          | Notes                     |
+| :------------------------- | :------------ | :------------------------ |
+| `id`                       | UUID PK       |                           |
+| `name`                     | TEXT NOT NULL |                           |
+| `description`              | TEXT          | Default `''`              |
+| `price`                    | NUMERIC(10,2) | CHECK `>= 0`              |
+| `inventory_count`          | INTEGER       | CHECK `>= 0`              |
+| `is_active`                | BOOLEAN       | Default `true`, indexed   |
+| `created_at`, `updated_at` | TIMESTAMPTZ   | `updated_at` auto-trigger |
 
 #### `orders`
-| Column | Type | Notes |
-| :--- | :--- | :--- |
-| `id` | UUID PK | |
-| `order_number` | INTEGER | Sequential, added post-migration |
-| `customer_id` | UUID FK → customers | `ON DELETE RESTRICT` |
-| `shipping_address` | JSONB | Stores structured address object |
-| `total_amount` | NUMERIC(10,2) | CHECK `>= 0` |
-| `payment_method` | ENUM | `razorpay`, `cod`, `offline` |
-| `payment_status` | ENUM | `pending`, `paid`, `failed`, `refunded` |
-| `order_status` | ENUM | `pending`, `processing`, `shipped`, `delivered`, `cancelled` |
-| `razorpay_order_id` | TEXT | Unique index where not null |
-| `razorpay_payment_id` | TEXT | |
-| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+| Column                     | Type                | Notes                                                        |
+| :------------------------- | :------------------ | :----------------------------------------------------------- |
+| `id`                       | UUID PK             |                                                              |
+| `order_number`             | INTEGER             | Sequential, added post-migration                             |
+| `customer_id`              | UUID FK → customers | `ON DELETE RESTRICT`                                         |
+| `shipping_address`         | JSONB               | Stores structured address object                             |
+| `total_amount`             | NUMERIC(10,2)       | CHECK `>= 0`                                                 |
+| `payment_method`           | ENUM                | `razorpay`, `cod`, `offline`                                 |
+| `payment_status`           | ENUM                | `pending`, `paid`, `failed`, `refunded`                      |
+| `order_status`             | ENUM                | `pending`, `processing`, `shipped`, `delivered`, `cancelled` |
+| `razorpay_order_id`        | TEXT                | Unique index where not null                                  |
+| `razorpay_payment_id`      | TEXT                |                                                              |
+| `created_at`, `updated_at` | TIMESTAMPTZ         |                                                              |
 
 **Indexes:** `customer_id`, `created_at DESC`, `payment_status`, `order_status`, unique on `razorpay_order_id`.
 
 #### `order_items`
-| Column | Type | Notes |
-| :--- | :--- | :--- |
-| `id` | UUID PK | |
-| `order_id` | UUID FK → orders | `ON DELETE CASCADE` |
-| `product_id` | UUID FK → products | `ON DELETE RESTRICT` |
-| `quantity` | INTEGER | CHECK `> 0` |
-| `price_at_purchase` | NUMERIC(10,2) | Locks in price at time of sale |
+
+| Column              | Type               | Notes                          |
+| :------------------ | :----------------- | :----------------------------- |
+| `id`                | UUID PK            |                                |
+| `order_id`          | UUID FK → orders   | `ON DELETE CASCADE`            |
+| `product_id`        | UUID FK → products | `ON DELETE RESTRICT`           |
+| `quantity`          | INTEGER            | CHECK `> 0`                    |
+| `price_at_purchase` | NUMERIC(10,2)      | Locks in price at time of sale |
 
 #### `reviews`
-| Column | Type | Notes |
-| :--- | :--- | :--- |
-| `id` | UUID PK | |
-| `product_id` | UUID FK → products | `ON DELETE CASCADE` |
-| `customer_id` | UUID FK → customers | `ON DELETE SET NULL` |
-| `rating` | INTEGER | CHECK `1-5` |
-| `review_text` | TEXT | Default `''` |
-| `image_url` | TEXT | Nullable |
-| `is_verified_purchase` | BOOLEAN | Default `false` |
-| `is_approved` | BOOLEAN | Default `false` |
-| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+| Column                     | Type                | Notes                |
+| :------------------------- | :------------------ | :------------------- |
+| `id`                       | UUID PK             |                      |
+| `product_id`               | UUID FK → products  | `ON DELETE CASCADE`  |
+| `customer_id`              | UUID FK → customers | `ON DELETE SET NULL` |
+| `rating`                   | INTEGER             | CHECK `1-5`          |
+| `review_text`              | TEXT                | Default `''`         |
+| `image_url`                | TEXT                | Nullable             |
+| `is_verified_purchase`     | BOOLEAN             | Default `false`      |
+| `is_approved`              | BOOLEAN             | Default `false`      |
+| `created_at`, `updated_at` | TIMESTAMPTZ         |                      |
 
 ### Database Functions
 
@@ -205,10 +210,10 @@ reviews ─────┘ (has customer_id FK, but frontend uses customer_name 
 
 RLS is **enabled** on all 5 tables. Only two policies exist:
 
-| Policy | Table | Effect |
-| :--- | :--- | :--- |
-| `products_public_read` | products | Public `SELECT` where `is_active = true` |
-| `reviews_public_read` | reviews | Public `SELECT` where `is_approved = true` |
+| Policy                 | Table    | Effect                                     |
+| :--------------------- | :------- | :----------------------------------------- |
+| `products_public_read` | products | Public `SELECT` where `is_active = true`   |
+| `reviews_public_read`  | reviews  | Public `SELECT` where `is_approved = true` |
 
 All other operations (INSERT, UPDATE, DELETE on all tables) rely exclusively on the **service role key** which bypasses RLS. There are no authenticated user policies, no admin role policies, and no insert policies for the public-facing review submission flow.
 
@@ -218,23 +223,23 @@ All other operations (INSERT, UPDATE, DELETE on all tables) rely exclusively on 
 
 ### Implemented Capabilities
 
-| Feature | Component | Status |
-| :--- | :--- | :--- |
-| **Auth Login** | `AdminLoginForm.tsx` | ✅ Works — email/password via Supabase Auth |
-| **Auth Guard** | `middleware.ts` + `lib/supabase/middleware.ts` | ✅ Redirects unauthenticated users to `/admin/login` |
-| **Dashboard Metrics** | `GlobalTelemetry.tsx` + `OverviewPanel.tsx` | ✅ Revenue, order count, inventory total, 30-day revenue trend |
-| **Orders Table** | `RecentOrdersTable.tsx` | ✅ Sortable, displays `#001` format, status badges, click-to-open |
-| **Order Detail Drawer** | `OrderDrawer.tsx` | ✅ Full edit: status, payment, total, address, customer info, line items |
-| **Order Status Flow** | `updateOrderStatusAction` | ✅ Processing → Shipped → Delivered |
-| **Order Deletion** | `deleteOrderAction` | ✅ Cascade deletes order items |
-| **Manual Order Creation** | `ManualOrderDrawer.tsx` | ✅ Offline orders with product selection, custom pricing, inventory validation |
-| **Inventory Editing** | `LogisticsInventory.tsx` | ✅ Inline count editing per product |
-| **Product Seeding** | `seedInitialProductAction` | ✅ One-click seed for the hero product |
-| **Customer Directory** | `CustomerDirectory.tsx` | ✅ List with name, email, phone, join date, total orders, total spend |
-| **Customer Detail Drawer** | `CustomerDrawer.tsx` | ✅ Edit name/email/phone, view order history, delete (with safeguard) |
-| **Review Moderation** | `ReviewsModeration.tsx` | ⚠️ UI works but uses wrong schema fields — see Section 5 |
-| **Invoice Generation** | `/admin/invoice/[id]` | ✅ Print-optimized page with `PrintInvoiceButton.tsx` |
-| **Sign Out** | `signOutAction` | ✅ Clears session, redirects to login |
+| Feature                    | Component                                      | Status                                                                         |
+| :------------------------- | :--------------------------------------------- | :----------------------------------------------------------------------------- |
+| **Auth Login**             | `AdminLoginForm.tsx`                           | ✅ Works — email/password via Supabase Auth                                    |
+| **Auth Guard**             | `middleware.ts` + `lib/supabase/middleware.ts` | ✅ Redirects unauthenticated users to `/admin/login`                           |
+| **Dashboard Metrics**      | `GlobalTelemetry.tsx` + `OverviewPanel.tsx`    | ✅ Revenue, order count, inventory total, 30-day revenue trend                 |
+| **Orders Table**           | `RecentOrdersTable.tsx`                        | ✅ Sortable, displays `#001` format, status badges, click-to-open              |
+| **Order Detail Drawer**    | `OrderDrawer.tsx`                              | ✅ Full edit: status, payment, total, address, customer info, line items       |
+| **Order Status Flow**      | `updateOrderStatusAction`                      | ✅ Processing → Shipped → Delivered                                            |
+| **Order Deletion**         | `deleteOrderAction`                            | ✅ Cascade deletes order items                                                 |
+| **Manual Order Creation**  | `ManualOrderDrawer.tsx`                        | ✅ Offline orders with product selection, custom pricing, inventory validation |
+| **Inventory Editing**      | `LogisticsInventory.tsx`                       | ✅ Inline count editing per product                                            |
+| **Product Seeding**        | `seedInitialProductAction`                     | ✅ One-click seed for the hero product                                         |
+| **Customer Directory**     | `CustomerDirectory.tsx`                        | ✅ List with name, email, phone, join date, total orders, total spend          |
+| **Customer Detail Drawer** | `CustomerDrawer.tsx`                           | ✅ Edit name/email/phone, view order history, delete (with safeguard)          |
+| **Review Moderation**      | `ReviewsModeration.tsx`                        | ⚠️ UI works but uses wrong schema fields — see Section 5                       |
+| **Invoice Generation**     | `/admin/invoice/[id]`                          | ✅ Print-optimized page with `PrintInvoiceButton.tsx`                          |
+| **Sign Out**               | `signOutAction`                                | ✅ Clears session, redirects to login                                          |
 
 ### Known UI Limitations
 
@@ -242,7 +247,7 @@ All other operations (INSERT, UPDATE, DELETE on all tables) rely exclusively on 
 - **No CSV export.** Not implemented anywhere in the admin.
 - **No pagination.** Orders, customers, and reviews all load in a single fetch.
 - **Console.log statements in production:** `AdminShell.tsx` line 42 logs "Button Clicked!", `ManualOrderDrawer.tsx` line 15 logs render state.
-- **No admin role verification.** `requireAdminSession()` checks only that *a* Supabase user is logged in — it does not verify the user has admin privileges. Any authenticated Supabase user can access admin features.
+- **No admin role verification.** `requireAdminSession()` checks only that _a_ Supabase user is logged in — it does not verify the user has admin privileges. Any authenticated Supabase user can access admin features.
 
 ### Operational Risks
 
@@ -263,7 +268,8 @@ The actual PostgreSQL migration (`supabase/migrations/20250525000000_initial_sch
 
 These are completely different column names and types.
 
-**Production Consequence:**  
+**Production Consequence:**
+
 - `submitReview()` in `app/actions/reviews.ts` inserts `customer_name` and `comment` — columns that don't exist. Every customer review submission will throw a `PostgresError`.
 - `getApprovedReviews()` filters by `.eq("status", "approved")` — the column `status` doesn't exist. The PDP review section will show zero reviews regardless of data.
 - `ReviewsModeration.tsx` renders `r.customer_name` and `r.comment` — will display `undefined` for every row.
@@ -283,6 +289,7 @@ If a developer adds a new feature using `createClient()` (the anon/user client) 
 
 **Required Fix:**  
 Add explicit RLS policies for:
+
 - Public INSERT on `reviews` (for customer submissions)
 - Authenticated admin CRUD on all tables
 - Or document clearly that **all mutations must use the service role client**
@@ -297,7 +304,8 @@ All transactional emails send from `onboarding@resend.dev`. Resend restricts thi
 **Production Consequence:**  
 Real customers will never receive their order confirmation emails. Emails will silently fail to deliver (Resend returns 200 but doesn't deliver).
 
-**Required Fix:**  
+**Required Fix:**
+
 1. Verify `livaara.com` (or your sending domain) in the Resend dashboard by adding DNS records (DKIM, SPF, DMARC).
 2. Update the `from` field in the webhook to `LIVAARA <noreply@livaara.com>`.
 
@@ -311,7 +319,8 @@ Real customers will never receive their order confirmation emails. Emails will s
 **Production Consequence:**  
 No real transactions can be made. The Razorpay checkout modal will only accept test card numbers.
 
-**Required Fix:**  
+**Required Fix:**
+
 1. Complete KYC on the Razorpay merchant dashboard.
 2. Generate live keys (`rzp_live_*`).
 3. Set up a webhook endpoint URL in Razorpay dashboard pointing to your production domain: `https://yourdomain.com/api/checkout/razorpay-webhook`.
@@ -324,36 +333,36 @@ No real transactions can be made. The Razorpay checkout modal will only accept t
 
 ### Chunk 1 — Payment Integrity ✅ COMPLETED
 
-| Task | Status | File |
-| :--- | :--- | :--- |
-| Razorpay webhook with HMAC verification | ✅ Done | `app/api/checkout/razorpay-webhook/route.ts` |
-| Backend price calculation (no frontend trust) | ✅ Done | `app/api/checkout/razorpay/route.ts` |
-| Atomic inventory decrement via SQL RPC | ✅ Done | Webhook uses `decrement_product_inventory` |
-| Idempotent webhook processing | ✅ Done | Checks `payment_status === "paid"` before processing |
-| Cart validation (active, inventory, valid IDs) | ✅ Done | Route validates each product before order creation |
+| Task                                           | Status  | File                                                 |
+| :--------------------------------------------- | :------ | :--------------------------------------------------- |
+| Razorpay webhook with HMAC verification        | ✅ Done | `app/api/checkout/razorpay-webhook/route.ts`         |
+| Backend price calculation (no frontend trust)  | ✅ Done | `app/api/checkout/razorpay/route.ts`                 |
+| Atomic inventory decrement via SQL RPC         | ✅ Done | Webhook uses `decrement_product_inventory`           |
+| Idempotent webhook processing                  | ✅ Done | Checks `payment_status === "paid"` before processing |
+| Cart validation (active, inventory, valid IDs) | ✅ Done | Route validates each product before order creation   |
 
 ### Chunk 2 — Database Consistency 🔲 NOT STARTED
 
-| Task | Priority | Details |
-| :--- | :--- | :--- |
-| Sync review schema | **CRITICAL** | Align `lib/types/database.ts` Review type, all Server Actions, and all components with the actual Supabase migration columns |
-| Remove hardcoded UUIDs | **HIGH** | Replace `00000000-0000-0000-0000-000000000001` in `CartContext.tsx` and `ShoppableVideoCarousel.tsx` with the real product ID from the database |
-| Add `RAZORPAY_WEBHOOK_SECRET` to `.env.example` | **MEDIUM** | Currently missing from the template |
-| Add `NEXT_PUBLIC_GA_ID` to `.env.example` | **MEDIUM** | Currently missing from the template |
+| Task                                            | Priority     | Details                                                                                                                                         |
+| :---------------------------------------------- | :----------- | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sync review schema                              | **CRITICAL** | Align `lib/types/database.ts` Review type, all Server Actions, and all components with the actual Supabase migration columns                    |
+| Remove hardcoded UUIDs                          | **HIGH**     | Replace `00000000-0000-0000-0000-000000000001` in `CartContext.tsx` and `ShoppableVideoCarousel.tsx` with the real product ID from the database |
+| Add `RAZORPAY_WEBHOOK_SECRET` to `.env.example` | **MEDIUM**   | Currently missing from the template                                                                                                             |
+| Add `NEXT_PUBLIC_GA_ID` to `.env.example`       | **MEDIUM**   | Currently missing from the template                                                                                                             |
 
 ### Chunk 3 — Security & Cleanup 🔲 NOT STARTED
 
-| Task | Priority | Details |
-| :--- | :--- | :--- |
-| Add RLS insert policy for reviews | **HIGH** | Allow public inserts with rate limiting |
-| Add admin role check | **HIGH** | `requireAdminSession()` must verify a role claim, not just any authenticated user |
-| Remove dead `src/` directory | **MEDIUM** | Legacy Vite router code, 5 files |
-| Remove `api/server.js` | **MEDIUM** | Unused Express server file |
-| Remove `scripts/serve.mjs` | **MEDIUM** | Unused serve script |
-| Remove unused shadcn components | **MEDIUM** | 48 unused files in `components/ui/` |
-| Remove 38 unused npm packages | **MEDIUM** | See Section 7 for full list |
-| Remove console.log statements | **LOW** | 3 instances in `AdminShell.tsx`, `ManualOrderDrawer.tsx`, `lib/analytics.ts` (dev-only) |
-| Verify Resend domain | **HIGH** | Required before any customer email delivery works |
+| Task                              | Priority   | Details                                                                                 |
+| :-------------------------------- | :--------- | :-------------------------------------------------------------------------------------- |
+| Add RLS insert policy for reviews | **HIGH**   | Allow public inserts with rate limiting                                                 |
+| Add admin role check              | **HIGH**   | `requireAdminSession()` must verify a role claim, not just any authenticated user       |
+| Remove dead `src/` directory      | **MEDIUM** | Legacy Vite router code, 5 files                                                        |
+| Remove `api/server.js`            | **MEDIUM** | Unused Express server file                                                              |
+| Remove `scripts/serve.mjs`        | **MEDIUM** | Unused serve script                                                                     |
+| Remove unused shadcn components   | **MEDIUM** | 48 unused files in `components/ui/`                                                     |
+| Remove 38 unused npm packages     | **MEDIUM** | See Section 7 for full list                                                             |
+| Remove console.log statements     | **LOW**    | 3 instances in `AdminShell.tsx`, `ManualOrderDrawer.tsx`, `lib/analytics.ts` (dev-only) |
+| Verify Resend domain              | **HIGH**   | Required before any customer email delivery works                                       |
 
 ---
 
@@ -362,6 +371,7 @@ No real transactions can be made. The Razorpay checkout modal will only accept t
 ### Unused Files (56 total, from `knip` static analysis)
 
 **Legacy Vite Application (delete entire `src/` directory):**
+
 - `src/lib/utils.ts`
 - `src/router.tsx`
 - `src/routes/__root.tsx`
@@ -370,13 +380,16 @@ No real transactions can be made. The Razorpay checkout modal will only accept t
 - `src/styles.css`
 
 **Unused Server Files:**
+
 - `api/server.js` — Express server, never used in Next.js
 - `scripts/serve.mjs` — Static file server, never used
 
 **Unused Hooks:**
+
 - `hooks/use-mobile.tsx` — Not imported anywhere
 
 **Unused Supabase Client:**
+
 - `lib/supabase/client.ts` — Browser client, never imported
 
 **Unused Shadcn UI Components (48 files):**  
@@ -390,15 +403,15 @@ Should be removed from `package.json` to reduce bundle size and install time:
 
 ### Unused Exported Functions (7)
 
-| Export | File | Notes |
-| :--- | :--- | :--- |
-| `approveReviewAction` | `app/admin/actions.ts` | Duplicate of `updateReviewStatus` |
-| `deleteReviewAction` | `app/admin/actions.ts` | Never called from UI |
-| `formatOrderDisplayId` | `lib/admin/format.ts` | Superseded by inline `#001` formatting |
-| `truncateReview` | `lib/admin/format.ts` | Never imported |
-| `trackEvent` | `lib/analytics.ts` | Only used internally by other analytics helpers |
-| `FALLBACK_HERO_PRODUCT` | `lib/products.ts` | Used only within `getHeroProduct` fallback |
-| `cn` | `lib/utils.ts` | Shadcn utility, not imported by any component |
+| Export                  | File                   | Notes                                           |
+| :---------------------- | :--------------------- | :---------------------------------------------- |
+| `approveReviewAction`   | `app/admin/actions.ts` | Duplicate of `updateReviewStatus`               |
+| `deleteReviewAction`    | `app/admin/actions.ts` | Never called from UI                            |
+| `formatOrderDisplayId`  | `lib/admin/format.ts`  | Superseded by inline `#001` formatting          |
+| `truncateReview`        | `lib/admin/format.ts`  | Never imported                                  |
+| `trackEvent`            | `lib/analytics.ts`     | Only used internally by other analytics helpers |
+| `FALLBACK_HERO_PRODUCT` | `lib/products.ts`      | Used only within `getHeroProduct` fallback      |
+| `cn`                    | `lib/utils.ts`         | Shadcn utility, not imported by any component   |
 
 ### Placeholder Assets
 
@@ -408,11 +421,11 @@ Should be removed from `package.json` to reduce bundle size and install time:
 
 ### Console.log Statements
 
-| File | Line | Content |
-| :--- | :--- | :--- |
-| `components/admin/AdminShell.tsx` | ~42 | `console.log("Button Clicked! Setting isManualOpen to true.")` |
-| `components/admin/ManualOrderDrawer.tsx` | ~15 | `console.log("ManualOrderDrawer render. isOpen:", isOpen)` |
-| `lib/analytics.ts` | 5 | `console.log("GA Event:", eventName, params)` — dev-only, gated by `NODE_ENV` |
+| File                                     | Line | Content                                                                       |
+| :--------------------------------------- | :--- | :---------------------------------------------------------------------------- |
+| `components/admin/AdminShell.tsx`        | ~42  | `console.log("Button Clicked! Setting isManualOpen to true.")`                |
+| `components/admin/ManualOrderDrawer.tsx` | ~15  | `console.log("ManualOrderDrawer render. isOpen:", isOpen)`                    |
+| `lib/analytics.ts`                       | 5    | `console.log("GA Event:", eventName, params)` — dev-only, gated by `NODE_ENV` |
 
 ---
 
@@ -442,14 +455,14 @@ NEXT_PUBLIC_GA_ID=G-NBTSBFJ2NE
 
 ### Variable Notes
 
-| Variable | Scope | Notes |
-| :--- | :--- | :--- |
-| `NEXT_PUBLIC_*` | Client + Server | Exposed to browser bundle — never put secrets here |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | **Full database access, bypasses RLS.** Never expose. |
-| `RAZORPAY_KEY_SECRET` | Server only | Used to create orders and in the Razorpay SDK |
-| `RAZORPAY_WEBHOOK_SECRET` | Server only | Used for HMAC verification of incoming webhooks |
-| `RESEND_API_KEY` | Server only | Currently using test key `re_WsQ7AJ2L_*` |
-| `ADMIN_EMAIL` | Server only | Receives admin notification emails on new orders |
+| Variable                    | Scope           | Notes                                                 |
+| :-------------------------- | :-------------- | :---------------------------------------------------- |
+| `NEXT_PUBLIC_*`             | Client + Server | Exposed to browser bundle — never put secrets here    |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only     | **Full database access, bypasses RLS.** Never expose. |
+| `RAZORPAY_KEY_SECRET`       | Server only     | Used to create orders and in the Razorpay SDK         |
+| `RAZORPAY_WEBHOOK_SECRET`   | Server only     | Used for HMAC verification of incoming webhooks       |
+| `RESEND_API_KEY`            | Server only     | Currently using test key `re_WsQ7AJ2L_*`              |
+| `ADMIN_EMAIL`               | Server only     | Receives admin notification emails on new orders      |
 
 ---
 
@@ -597,46 +610,46 @@ vercel env add SUPABASE_SERVICE_ROLE_KEY production
 
 ### Tier 1 — Revenue Optimization
 
-| Feature | Impact | Implementation |
-| :--- | :--- | :--- |
-| **Abandoned Cart Recovery** | Recover 10-15% of lost checkouts | Supabase Edge Function cron job to detect `pending` orders older than 2 hours, trigger Resend email with discount code |
-| **Customer Accounts & Order History** | Increases repeat purchase rate | Supabase Auth for customers, `/account` route with order history, saved addresses |
-| **Subscription / Auto-Replenish** | Predictable recurring revenue | Razorpay Subscriptions API for monthly oil delivery |
+| Feature                               | Impact                           | Implementation                                                                                                         |
+| :------------------------------------ | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| **Abandoned Cart Recovery**           | Recover 10-15% of lost checkouts | Supabase Edge Function cron job to detect `pending` orders older than 2 hours, trigger Resend email with discount code |
+| **Customer Accounts & Order History** | Increases repeat purchase rate   | Supabase Auth for customers, `/account` route with order history, saved addresses                                      |
+| **Subscription / Auto-Replenish**     | Predictable recurring revenue    | Razorpay Subscriptions API for monthly oil delivery                                                                    |
 
 ### Tier 2 — Operational Scale
 
-| Feature | Impact | Implementation |
-| :--- | :--- | :--- |
+| Feature                       | Impact                                      | Implementation                                                                                              |
+| :---------------------------- | :------------------------------------------ | :---------------------------------------------------------------------------------------------------------- |
 | **Admin Analytics Dashboard** | Real-time business intelligence without GA4 | `recharts` (already installed, unused) to visualize revenue trends, AOV, conversion rate from Supabase data |
-| **Inventory Alerts** | Prevent stockouts | Slack/Discord webhook when `inventory_count` drops below threshold |
-| **Shipping Integration** | Automate fulfillment | Shiprocket or Delhivery API for label generation and tracking numbers |
-| **Real Tax Engine** | Legal compliance | GST calculation based on product category and shipping state |
+| **Inventory Alerts**          | Prevent stockouts                           | Slack/Discord webhook when `inventory_count` drops below threshold                                          |
+| **Shipping Integration**      | Automate fulfillment                        | Shiprocket or Delhivery API for label generation and tracking numbers                                       |
+| **Real Tax Engine**           | Legal compliance                            | GST calculation based on product category and shipping state                                                |
 
 ### Tier 3 — Growth & Content
 
-| Feature | Impact | Implementation |
-| :--- | :--- | :--- |
-| **SEO Blog / Journal** | Organic traffic acquisition | MDX-based `/journal` route with Ayurvedic content |
-| **Multi-Product Catalog** | Revenue diversification | Product listing page, category filters, related products |
-| **Customer Reviews with Photos** | Social proof | Already have `image_url` column in reviews schema |
-| **Referral Program** | Viral growth | Unique referral codes with discount attribution |
+| Feature                          | Impact                      | Implementation                                           |
+| :------------------------------- | :-------------------------- | :------------------------------------------------------- |
+| **SEO Blog / Journal**           | Organic traffic acquisition | MDX-based `/journal` route with Ayurvedic content        |
+| **Multi-Product Catalog**        | Revenue diversification     | Product listing page, category filters, related products |
+| **Customer Reviews with Photos** | Social proof                | Already have `image_url` column in reviews schema        |
+| **Referral Program**             | Viral growth                | Unique referral codes with discount attribution          |
 
 ---
 
 ## FINAL LAUNCH READINESS SUMMARY
 
-| Category | Status |
-| :--- | :--- |
-| **Storefront UI** | ✅ Ready |
-| **Payment Security** | ✅ Hardened (webhook + backend pricing + atomic inventory) |
-| **Razorpay Integration** | 🟡 Test mode only — needs live keys + KYC |
-| **Email Delivery** | 🔴 Sandbox only — needs domain verification |
-| **Review System** | 🔴 Schema mismatch — will crash on real database |
-| **Admin Dashboard** | ⚠️ Functional but lacks role-based access control |
-| **RLS Security** | ⚠️ Enabled but policies are incomplete |
-| **Codebase Health** | 🟡 56 dead files, 38 unused packages — functional but bloated |
-| **SEO** | ✅ Metadata, Open Graph, semantic HTML present |
-| **Analytics** | ✅ GA4 installed with event tracking |
+| Category                 | Status                                                        |
+| :----------------------- | :------------------------------------------------------------ |
+| **Storefront UI**        | ✅ Ready                                                      |
+| **Payment Security**     | ✅ Hardened (webhook + backend pricing + atomic inventory)    |
+| **Razorpay Integration** | 🟡 Test mode only — needs live keys + KYC                     |
+| **Email Delivery**       | 🔴 Sandbox only — needs domain verification                   |
+| **Review System**        | 🔴 Schema mismatch — will crash on real database              |
+| **Admin Dashboard**      | ⚠️ Functional but lacks role-based access control             |
+| **RLS Security**         | ⚠️ Enabled but policies are incomplete                        |
+| **Codebase Health**      | 🟡 56 dead files, 38 unused packages — functional but bloated |
+| **SEO**                  | ✅ Metadata, Open Graph, semantic HTML present                |
+| **Analytics**            | ✅ GA4 installed with event tracking                          |
 
 ### Verdict
 

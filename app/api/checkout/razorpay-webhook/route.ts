@@ -44,7 +44,19 @@ export async function POST(req: Request) {
 
       const supabase = createAdminClient();
 
-      // 1. Check idempotency and update order atomically
+      // 0. Secondary idempotency guard: check if this payment ID was already recorded
+      // This guards against duplicate webhook events for the same payment_id
+      const { data: existingPayment } = await supabase
+        .from("orders")
+        .select("id, payment_status")
+        .eq("razorpay_payment_id", razorpayPaymentId)
+        .maybeSingle();
+
+      if (existingPayment) {
+        return NextResponse.json({ received: true, message: "Already processed (payment_id)" });
+      }
+
+      // 1. Fetch the order by Razorpay order ID
       const { data: order, error: fetchError } = await supabase
         .from("orders")
         .select(
@@ -66,7 +78,7 @@ export async function POST(req: Request) {
       }
 
       if (order.payment_status === "paid") {
-        // Idempotency: Already processed
+        // Idempotency: Already processed via order_id route
         return NextResponse.json({ received: true, message: "Already processed" });
       }
 

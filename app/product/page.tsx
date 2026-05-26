@@ -3,11 +3,12 @@ import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { Star, CheckCircle2 } from "lucide-react";
 import { getApprovedReviews } from "@/app/actions/reviews";
+import { getHeroProduct } from "@/lib/products";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
 import { ReviewSectionHeader } from "@/components/product/ReviewSectionHeader";
 
 export default async function ProductPage() {
-  const reviews = await getApprovedReviews();
+  const [product, reviews] = await Promise.all([getHeroProduct(), getApprovedReviews()]);
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans text-stone-900 selection:bg-[#C8A96A] selection:text-white">
@@ -48,7 +49,7 @@ export default async function ProductPage() {
               Lomaras™ Ayurvedic Scalp Oil
             </h1>
 
-            <p className="text-2xl font-serif text-stone-800 mb-6">₹599.00</p>
+            <p className="text-2xl font-serif text-stone-800 mb-6">₹{product.price.toFixed(2)}</p>
 
             <div className="w-12 h-[1px] bg-[#C8A96A] mb-8"></div>
 
@@ -58,7 +59,11 @@ export default async function ProductPage() {
               stimulate growth and nourish roots from within.
             </p>
 
-            <AddToCartButton price={599} />
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name}
+              price={product.price}
+            />
 
             <div className="bg-stone-50 border border-stone-200 p-4 rounded-md flex items-start gap-4">
               <div className="text-[#C8A96A] mt-1">
@@ -180,7 +185,7 @@ export default async function ProductPage() {
       {/* 4. CUSTOMER REVIEWS */}
       <section className="bg-stone-100 border-t border-stone-200 py-20 md:py-24">
         <div className="container-px mx-auto max-w-7xl">
-          <ReviewSectionHeader />
+          <ReviewSectionHeader productId={product.id} />
 
           {reviews.length === 0 ? (
             <div className="text-center py-12">
@@ -193,12 +198,12 @@ export default async function ProductPage() {
               {reviews.map((r) => (
                 <ReviewCard
                   key={r.id}
-                  name={r.customer_name}
+                  name={r.customer_name ?? "Anonymous"}
                   date={new Date(r.created_at).toLocaleDateString()}
                   title={r.rating === 5 ? "Luxurious ritual" : "Beautiful product"}
-                  content={r.comment}
+                  content={r.review_text}
                   rating={r.rating}
-                  isVerified={r.is_verified_buyer}
+                  isVerified={r.is_verified_purchase}
                 />
               ))}
             </div>

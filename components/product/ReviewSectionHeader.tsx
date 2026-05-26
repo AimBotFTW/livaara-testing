@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ReviewFormModal } from "./ReviewFormModal";
 
-export function ReviewSectionHeader() {
+export function ReviewSectionHeader({ productId }: { productId: string }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
@@ -20,7 +20,11 @@ export function ReviewSectionHeader() {
         </button>
       </div>
 
-      <ReviewFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <ReviewFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        productId={productId}
+      />
     </>
   );
 }

@@ -22,15 +22,8 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const DEFAULT_ITEM: CartItem = {
-  id: "00000000-0000-0000-0000-000000000001",
-  name: "Lomaras™ Ayurvedic Scalp Oil",
-  price: 599,
-  quantity: 1,
-};
-
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([DEFAULT_ITEM]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
   const addToCart = (item: CartItem) => {

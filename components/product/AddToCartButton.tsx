@@ -5,15 +5,23 @@ import { useCart } from "@/lib/context/CartContext";
 import { Minus, Plus } from "lucide-react";
 import { trackShopNowClick } from "@/lib/analytics";
 
-export function AddToCartButton({ price = 599 }: { price?: number }) {
+export function AddToCartButton({
+  productId,
+  productName = "Lomaras™ Ayurvedic Scalp Oil",
+  price = 599,
+}: {
+  productId: string;
+  productName?: string;
+  price?: number;
+}) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart, toggleCart } = useCart();
 
   const handleAddToCart = () => {
     trackShopNowClick();
     addToCart({
-      id: "00000000-0000-0000-0000-000000000001",
-      name: "Lomaras™ Ayurvedic Scalp Oil",
+      id: productId,
+      name: productName,
       price,
       quantity,
     });

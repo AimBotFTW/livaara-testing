@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { useCart } from "@/lib/context/CartContext";
 import { Volume2, VolumeX, Plus } from "lucide-react";
-import Image from "next/image";
+import type { Product } from "@/lib/types/database";
 
 // Placeholder videos (aesthetic wellness/hair mp4 links)
 const VIDEOS = [
@@ -25,7 +25,7 @@ const VIDEOS = [
   },
 ];
 
-function VideoCard({ src }: { src: string }) {
+function VideoCard({ src, product }: { src: string; product: Product }) {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { addToCart, toggleCart } = useCart();
@@ -40,9 +40,9 @@ function VideoCard({ src }: { src: string }) {
 
   const handleAddToCart = () => {
     addToCart({
-      id: "00000000-0000-0000-0000-000000000001",
-      name: "Lomaras™ Ayurvedic Scalp Oil",
-      price: 599,
+      id: product.id,
+      name: product.name,
+      price: product.price,
       quantity: 1,
     });
     toggleCart(true);
@@ -102,9 +102,9 @@ function VideoCard({ src }: { src: string }) {
           </div>
           <div className="flex-grow min-w-0">
             <h4 className="font-serif text-sm font-medium text-stone-900 truncate">
-              Lomaras™ Scalp Oil
+              {product.name}
             </h4>
-            <p className="font-sans text-xs text-stone-500">₹599</p>
+            <p className="font-sans text-xs text-stone-500">₹{product.price}</p>
           </div>
           <button
             onClick={handleAddToCart}
@@ -118,7 +118,7 @@ function VideoCard({ src }: { src: string }) {
   );
 }
 
-export function ShoppableVideoCarousel() {
+export function ShoppableVideoCarousel({ product }: { product: Product }) {
   return (
     <section className="w-full bg-[#F8F5F0] py-16 md:py-24 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 md:px-12 mb-10 text-center">
@@ -136,7 +136,7 @@ export function ShoppableVideoCarousel() {
         <div className="w-[5vw] flex-shrink-0 hidden md:block"></div>
 
         {VIDEOS.map((video) => (
-          <VideoCard key={video.id} src={video.src} />
+          <VideoCard key={video.id} src={video.src} product={product} />
         ))}
 
         {/* Empty padding block for end alignment on scroll */}

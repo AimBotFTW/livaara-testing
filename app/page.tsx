@@ -25,7 +25,7 @@ export default async function HomePage() {
       <Process />
       <Ingredients />
       <Ritual />
-      <ShoppableVideoCarousel />
+      <ShoppableVideoCarousel product={product} />
       <Testimonials />
       <FinalCTA price={product.price} />
       <Footer />

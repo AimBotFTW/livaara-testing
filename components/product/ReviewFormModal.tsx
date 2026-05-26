@@ -8,13 +8,13 @@ import { toast } from "sonner";
 type ReviewFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  productId: string;
 };
 
-export function ReviewFormModal({ isOpen, onClose }: ReviewFormModalProps) {
+export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalProps) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
-  const [name, setName] = useState("");
-  const [comment, setComment] = useState("");
+  const [reviewText, setReviewText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -25,25 +25,23 @@ export function ReviewFormModal({ isOpen, onClose }: ReviewFormModalProps) {
       toast.error("Please select a rating");
       return;
     }
-    if (!name.trim() || !comment.trim()) {
-      toast.error("Please provide both name and comment");
+    if (!reviewText.trim()) {
+      toast.error("Please write your review");
       return;
     }
 
     setIsSubmitting(true);
     const result = await submitReview({
-      customer_name: name.trim(),
+      product_id: productId,
       rating,
-      comment: comment.trim(),
+      review_text: reviewText.trim(),
     });
 
     if (result.success) {
       toast.success("Thank you! Your review has been submitted for moderation.");
       onClose();
-      // Reset form
       setRating(0);
-      setName("");
-      setComment("");
+      setReviewText("");
     } else {
       toast.error(result.error || "Failed to submit review");
     }
@@ -90,25 +88,11 @@ export function ReviewFormModal({ isOpen, onClose }: ReviewFormModalProps) {
 
             <div>
               <label className="block text-xs uppercase tracking-widest text-stone-500 font-medium mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="How should we call you?"
-                className="w-full bg-white border border-stone-200 rounded-sm px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-[#C8A96A] transition-colors"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs uppercase tracking-widest text-stone-500 font-medium mb-2">
                 Review
               </label>
               <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                value={reviewText}
+                onChange={(e) => setReviewText(e.target.value)}
                 placeholder="Tell us what you loved..."
                 rows={4}
                 className="w-full bg-white border border-stone-200 rounded-sm px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-[#C8A96A] transition-colors resize-none"

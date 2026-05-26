@@ -3,7 +3,7 @@ import type { Product } from "@/lib/types/database";
 
 /** Static fallback when Supabase is unavailable (dev / pre-migration). */
 export const FALLBACK_HERO_PRODUCT: Product = {
-  id: "00000000-0000-0000-0000-000000000001",
+  id: "a0000000-0000-4000-8000-000000000001",
   name: "Lomaras™ Ayurvedic Scalp Oil",
   description:
     "Cold-infused over seven slow days. Crafted with Bhringraj, Amla, Neem, Sesame, Brahmi & Methi in 100ml amber glass — formulated by a Vaidya who spent four decades studying scalps, not market trends.",

@@ -23,7 +23,6 @@ export type Product = {
 
 export type Order = {
   id: string;
-  order_number?: number;
   customer_id: string;
   shipping_address: Record<string, unknown>;
   total_amount: number;
@@ -33,6 +32,7 @@ export type Order = {
   razorpay_order_id: string | null;
   razorpay_payment_id: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 export type OrderItem = {
@@ -45,12 +45,17 @@ export type OrderItem = {
 
 export type Review = {
   id: string;
-  customer_name: string;
+  product_id: string;
+  customer_id: string | null;
   rating: number;
-  comment: string;
-  status: "pending" | "approved" | "rejected";
-  is_verified_buyer: boolean;
+  review_text: string;
+  image_url: string | null;
+  is_verified_purchase: boolean;
+  is_approved: boolean;
   created_at: string;
+  updated_at: string;
+  // Joined field: populated when fetching with customer join
+  customer_name?: string | null;
 };
 
 type Tables = {
@@ -68,8 +73,9 @@ type Tables = {
   };
   orders: {
     Row: Order;
-    Insert: Partial<Order> & Pick<Order, "customer_id" | "total_amount">;
-    Update: Partial<Order>;
+    Insert: Omit<Partial<Order>, "id" | "created_at" | "updated_at"> &
+      Pick<Order, "customer_id" | "total_amount">;
+    Update: Partial<Omit<Order, "id" | "created_at">>;
     Relationships: [];
   };
   order_items: {
@@ -81,8 +87,9 @@ type Tables = {
   };
   reviews: {
     Row: Review;
-    Insert: Partial<Review> & Pick<Review, "customer_name" | "rating">;
-    Update: Partial<Review>;
+    Insert: Omit<Partial<Review>, "id" | "created_at" | "updated_at" | "customer_name"> &
+      Pick<Review, "product_id" | "rating">;
+    Update: Partial<Omit<Review, "id" | "created_at" | "customer_name">>;
     Relationships: [];
   };
 };
