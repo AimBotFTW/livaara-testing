@@ -1,0 +1,208 @@
+@import "tailwindcss";
+@source "../app";
+@source "../components";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sage: var(--sage);
+  --color-sage-foreground: var(--sage-foreground);
+  --color-cream: var(--cream);
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --radius: 0.5rem;
+  /* warm beige bg, deep brown text, gold accent, sage secondary */
+  --background: oklch(0.962 0.012 80); /* #F8F5F0 */
+  --foreground: oklch(0.235 0.025 40); /* #2C1E1A */
+  --card: oklch(0.985 0.008 80);
+  --card-foreground: oklch(0.235 0.025 40);
+  --popover: oklch(0.985 0.008 80);
+  --popover-foreground: oklch(0.235 0.025 40);
+  --primary: oklch(0.235 0.025 40); /* deep brown */
+  --primary-foreground: oklch(0.962 0.012 80);
+  --secondary: oklch(0.92 0.015 75);
+  --secondary-foreground: oklch(0.235 0.025 40);
+  --muted: oklch(0.93 0.012 75);
+  --muted-foreground: oklch(0.45 0.02 40);
+  --accent: oklch(0.74 0.09 75); /* #C8A96A gold */
+  --accent-foreground: oklch(0.235 0.025 40);
+  --sage: oklch(0.62 0.04 160); /* #6B8E7E */
+  --sage-foreground: oklch(0.985 0.008 80);
+  --cream: oklch(0.985 0.008 80);
+  --destructive: oklch(0.55 0.2 27);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.88 0.015 70);
+  --input: oklch(0.88 0.015 70);
+  --ring: oklch(0.74 0.09 75);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .container-px {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  @media (min-width: 768px) {
+    .container-px {
+      padding-left: 3rem;
+      padding-right: 3rem;
+    }
+  }
+  /* Staggered fade-up for hero/product */
+  .fade-up {
+    animation: fadeUp 0.8s ease-out both;
+  }
+  .fade-up-1 {
+    animation-delay: 0.1s;
+  }
+  .fade-up-2 {
+    animation-delay: 0.3s;
+  }
+  .fade-up-3 {
+    animation-delay: 0.5s;
+  }
+
+  /* Hover scales */
+  .hover-scale {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  /* Subtle image float */
+  .image-float {
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  /* Scroll reveals */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: all 0.6s ease-out;
+  }
+  .reveal.animate-in-view {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Original */
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    .fade-up,
+    .hover-scale,
+    .reveal,
+    .image-float,
+    .marquee-container * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Infinite horizontal marquee */
+  .marquee-container {
+    display: flex;
+    width: 100%;
+  }
+  .marquee-content {
+    display: flex;
+    animation: marquee 20s linear infinite;
+    @media (max-width: 768px) {
+      animation-duration: 15s;
+      font-size: 0.6rem;
+    }
+  }
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}

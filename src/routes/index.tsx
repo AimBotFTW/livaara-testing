@@ -72,7 +72,14 @@ function Header() {
             className="md:hidden text-primary p-2"
             aria-label="Menu"
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               {open ? <path d="M6 6l12 12M6 18L18 6" /> : <path d="M3 7h18M3 12h18M3 17h18" />}
             </svg>
           </button>
@@ -112,12 +119,11 @@ function Hero() {
         <div className="fade-up fade-up-1 reveal">
           <p className="eyebrow mb-6 fade-up fade-up-2">— 38 Years of Ayurvedic Craft</p>
           <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl leading-[1.05] text-primary fade-up fade-up-3">
-            Crafted Through{" "}
-            <span className="italic text-accent">Generations</span>
+            Crafted Through <span className="italic text-accent">Generations</span>
           </h1>
           <p className="mt-6 text-base md:text-lg text-muted-foreground max-w-md leading-relaxed fade-up fade-up-1 mt-8">
-            An Ayurvedic scalp ritual born not in a lab, but in 38 years of living,
-            healing practice. Cold-infused. Dosha-aligned. Slow by nature.
+            An Ayurvedic scalp ritual born not in a lab, but in 38 years of living, healing
+            practice. Cold-infused. Dosha-aligned. Slow by nature.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4 fade-up fade-up-2">
             <a
@@ -134,7 +140,9 @@ function Hero() {
             </a>
           </div>
           <div className="mt-12 flex items-center gap-8 text-xs uppercase tracking-[0.18em] text-muted-foreground fade-up fade-up-3">
-            <div><span className="text-accent">★★★★★</span> 4.9 / 5</div>
+            <div>
+              <span className="text-accent">★★★★★</span> 4.9 / 5
+            </div>
             <div>1,000+ Rituals Begun</div>
           </div>
         </div>
@@ -172,7 +180,10 @@ function Marquee() {
       <div className="marquee-container">
         <div className="marquee-content">
           {[...items, ...items].map((i, index) => (
-            <span key={`${i}-${index}`} className="flex items-center gap-3 text-[0.7rem] uppercase tracking-[0.22em] text-muted-foreground whitespace-nowrap px-4 py-5">
+            <span
+              key={`${i}-${index}`}
+              className="flex items-center gap-3 text-[0.7rem] uppercase tracking-[0.22em] text-muted-foreground whitespace-nowrap px-4 py-5"
+            >
               <span className="text-accent">✦</span> {i}
             </span>
           ))}
@@ -200,9 +211,9 @@ function Product() {
             <span className="italic text-accent">Ayurvedic Scalp Oil</span>
           </h2>
           <p className="mt-6 text-muted-foreground leading-relaxed">
-            Cold-infused over seven slow days. Crafted with Bhringraj, Amla, Neem,
-            Sesame, Brahmi & Methi in 100ml amber glass — formulated by a Vaidya
-            who spent four decades studying scalps, not market trends.
+            Cold-infused over seven slow days. Crafted with Bhringraj, Amla, Neem, Sesame, Brahmi &
+            Methi in 100ml amber glass — formulated by a Vaidya who spent four decades studying
+            scalps, not market trends.
           </p>
           <ul className="mt-8 space-y-3">
             {benefits.map((b) => (
@@ -221,7 +232,9 @@ function Product() {
               Free Dosha Consult
             </a>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground fade-up fade-up-3">Free shipping across India · 30-day ritual guarantee</p>
+          <p className="mt-4 text-xs text-muted-foreground fade-up fade-up-3">
+            Free shipping across India · 30-day ritual guarantee
+          </p>
         </div>
         <div className="order-1 md:order-2">
           <div className="aspect-square bg-secondary/50 rounded-sm overflow-hidden hover-scale">
@@ -255,7 +268,14 @@ function BeforeAfter() {
           ].map((it) => (
             <div key={it.tag} className="text-left">
               <div className="relative aspect-square overflow-hidden rounded-sm">
-                <img src={it.src} alt={it.tag} width={768} height={768} loading="lazy" className="w-full h-full object-cover" />
+                <img
+                  src={it.src}
+                  alt={it.tag}
+                  width={768}
+                  height={768}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
                 <span className="absolute top-4 left-4 bg-background/95 text-primary text-[0.65rem] uppercase tracking-[0.22em] px-3 py-1.5 rounded-sm">
                   {it.tag}
                 </span>
@@ -319,7 +339,9 @@ function Process() {
               <p className="eyebrow mt-6">— {s.eyebrow}</p>
               <h3 className="font-serif text-2xl text-primary mt-2">{s.title}</h3>
               <p className="mt-4 text-muted-foreground leading-relaxed text-sm">{s.body}</p>
-              <p className="mt-5 pl-4 border-l-2 border-accent italic text-sm text-primary/80">{s.note}</p>
+              <p className="mt-5 pl-4 border-l-2 border-accent italic text-sm text-primary/80">
+                {s.note}
+              </p>
             </div>
           ))}
         </div>
@@ -330,9 +352,24 @@ function Process() {
 
 function Ingredients() {
   const items = [
-    { n: "01", name: "Bhringraj", latin: "Eclipta Alba", body: "King of hair. Wedelolactone supports follicle activation and reduces visible breakage." },
-    { n: "02", name: "Amla", latin: "Phyllanthus Emblica", body: "Ayurveda's most potent antioxidant. Cold-processed to preserve full Vitamin C spectrum." },
-    { n: "03", name: "Neem", latin: "Azadirachta Indica", body: "Clarifying and anti-inflammatory action — direct to the scalp microbiome." },
+    {
+      n: "01",
+      name: "Bhringraj",
+      latin: "Eclipta Alba",
+      body: "King of hair. Wedelolactone supports follicle activation and reduces visible breakage.",
+    },
+    {
+      n: "02",
+      name: "Amla",
+      latin: "Phyllanthus Emblica",
+      body: "Ayurveda's most potent antioxidant. Cold-processed to preserve full Vitamin C spectrum.",
+    },
+    {
+      n: "03",
+      name: "Neem",
+      latin: "Azadirachta Indica",
+      body: "Clarifying and anti-inflammatory action — direct to the scalp microbiome.",
+    },
   ];
   return (
     <section id="ingredients" className="py-20 md:py-32 bg-secondary/40">
@@ -352,8 +389,12 @@ function Ingredients() {
             >
               <div className="font-serif text-3xl text-accent/70 fade-up-1">{it.n}</div>
               <h3 className="font-serif text-2xl text-primary mt-6 fade-up-2">{it.name}</h3>
-              <p className="eyebrow mt-1 normal-case tracking-[0.18em] italic fade-up-3">{it.latin}</p>
-              <p className="mt-5 text-muted-foreground text-sm leading-relaxed fade-up">{it.body}</p>
+              <p className="eyebrow mt-1 normal-case tracking-[0.18em] italic fade-up-3">
+                {it.latin}
+              </p>
+              <p className="mt-5 text-muted-foreground text-sm leading-relaxed fade-up">
+                {it.body}
+              </p>
             </div>
           ))}
         </div>
@@ -364,9 +405,21 @@ function Ingredients() {
 
 function Ritual() {
   const steps = [
-    { n: "01", title: "Find your dosha", body: "Three honest questions about your scalp — dry, oily, or reactive." },
-    { n: "02", title: "The marma massage", body: "Fingertips only, slow circular motion. Begin at the crown — minimum seven minutes." },
-    { n: "03", title: "Rest & repeat", body: "Forty-five minutes minimum. Overnight is optimal. Two to three times a week." },
+    {
+      n: "01",
+      title: "Find your dosha",
+      body: "Three honest questions about your scalp — dry, oily, or reactive.",
+    },
+    {
+      n: "02",
+      title: "The marma massage",
+      body: "Fingertips only, slow circular motion. Begin at the crown — minimum seven minutes.",
+    },
+    {
+      n: "03",
+      title: "Rest & repeat",
+      body: "Forty-five minutes minimum. Overnight is optimal. Two to three times a week.",
+    },
   ];
   return (
     <section id="ritual" className="py-20 md:py-32">
@@ -379,11 +432,16 @@ function Ritual() {
         </div>
         <div className="mt-14 divide-y divide-border border-y border-border">
           {steps.map((s) => (
-            <div key={s.n} className="grid grid-cols-[auto_1fr] gap-6 md:gap-12 py-7 items-baseline">
+            <div
+              key={s.n}
+              className="grid grid-cols-[auto_1fr] gap-6 md:gap-12 py-7 items-baseline"
+            >
               <div className="font-serif text-2xl md:text-3xl text-accent/70 w-12">{s.n}</div>
               <div>
                 <h3 className="font-serif text-xl md:text-2xl text-primary">{s.title}</h3>
-                <p className="mt-2 text-muted-foreground text-sm md:text-base leading-relaxed">{s.body}</p>
+                <p className="mt-2 text-muted-foreground text-sm md:text-base leading-relaxed">
+                  {s.body}
+                </p>
               </div>
             </div>
           ))}
@@ -426,10 +484,15 @@ function Testimonials() {
         </div>
         <div className="mt-16 grid md:grid-cols-3 gap-6">
           {reviews.map((r, i) => (
-            <div key={r.name} className={`bg-background p-8 rounded-sm border border-border flex flex-col reveal fade-up hover-scale ${i === 0 ? 'fade-up-1' : i === 1 ? 'fade-up-2' : 'fade-up-3'}`}>
+            <div
+              key={r.name}
+              className={`bg-background p-8 rounded-sm border border-border flex flex-col reveal fade-up hover-scale ${i === 0 ? "fade-up-1" : i === 1 ? "fade-up-2" : "fade-up-3"}`}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-accent tracking-widest">★★★★★</span>
-                <span className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">{r.type}</span>
+                <span className="text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
+                  {r.type}
+                </span>
               </div>
               <p className="font-serif italic text-lg text-primary/90 mt-6 leading-relaxed flex-1">
                 "{r.body}"
@@ -452,8 +515,7 @@ function FinalCTA() {
       <div className="container-px mx-auto max-w-3xl text-center">
         <p className="eyebrow mb-5 text-primary/70">— Begin Your Ritual</p>
         <h2 className="font-serif text-5xl md:text-6xl text-primary leading-[1.05]">
-          Your scalp has been{" "}
-          <span className="italic">waiting.</span>
+          Your scalp has been <span className="italic">waiting.</span>
         </h2>
         <p className="mt-6 text-primary/80 max-w-md mx-auto">
           Seven days of craft. Thirty-eight years of wisdom. One oil — formulated for you alone.
@@ -484,20 +546,46 @@ function Footer() {
         <div className="col-span-2 md:col-span-1">
           <div className="font-serif text-2xl tracking-[0.2em]">LIVAARA</div>
           <p className="mt-4 text-sm text-primary-foreground/70 leading-relaxed max-w-xs">
-            Rooted in 38 years of Vaidya-led Ayurvedic tradition. Crafted for your unique scalp, one slow batch at a time.
+            Rooted in 38 years of Vaidya-led Ayurvedic tradition. Crafted for your unique scalp, one
+            slow batch at a time.
           </p>
         </div>
         {[
           { title: "Explore", links: ["The Process", "Botanicals", "Products", "Your Ritual"] },
           { title: "Products", links: ["LOMARAS™ Oil", "Root Revive Shampoo", "All Products"] },
-{ title: "Connect", links: [<a href="https://www.instagram.com/livaara__?igsh=MWt1YXljMTh1aDlkdg==" target="_blank" rel="noopener noreferrer" className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">Instagram</a>, <a href="https://wa.me/+918511414551" target="_blank" rel="noopener noreferrer" className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">WhatsApp Consult</a>, "Contact", "Privacy Policy"] },
+          {
+            title: "Connect",
+            links: [
+              <a
+                href="https://www.instagram.com/livaara__?igsh=MWt1YXljMTh1aDlkdg=="
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
+              >
+                Instagram
+              </a>,
+              <a
+                href="https://wa.me/+918511414551"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
+              >
+                WhatsApp Consult
+              </a>,
+              "Contact",
+              "Privacy Policy",
+            ],
+          },
         ].map((c) => (
           <div key={c.title}>
             <p className="eyebrow mb-5">{c.title}</p>
             <ul className="space-y-3">
               {c.links.map((l) => (
                 <li key={l}>
-                  <a href="#" className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">
+                  <a
+                    href="#"
+                    className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
+                  >
                     {l}
                   </a>
                 </li>
