@@ -8,6 +8,15 @@ import { useRouter } from "next/navigation";
 import { processCheckoutSuccessAction, type CheckoutFormData } from "@/app/actions/checkout";
 import { trackPaymentSuccess } from "@/lib/analytics";
 
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => {
+      on: (event: string, callback: (response: { error: { description: string } }) => void) => void;
+      open: () => void;
+    };
+  }
+}
+
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -56,7 +65,7 @@ export default function CheckoutPage() {
 
       // 2. Initialize Razorpay
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Use NEXT_PUBLIC if you expose key on client, or leave blank to let backend handle, wait Razorpay JS requires the public key here. Wait, I should add NEXT_PUBLIC_RAZORPAY_KEY_ID to the plan or just use it.
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
         name: "Livaara",
@@ -77,7 +86,6 @@ export default function CheckoutPage() {
             );
 
             if (result.ok) {
-              // Payment processed & order successfully created in our DB
               if (result.orderId) {
                 trackPaymentSuccess(result.orderId, cartTotal);
               }
@@ -105,11 +113,11 @@ export default function CheckoutPage() {
           contact: formData.phone,
         },
         theme: {
-          color: "#2C1E1A", // stone-900
+          color: "#596244", // Deep sage green
         },
       };
 
-      const rzp = new window.Razorpay(options);
+      const rzp = new window.Razorpay(options as unknown as Record<string, unknown>);
       rzp.on("payment.failed", function (response: { error: { description: string } }) {
         console.error("Payment Failed:", response.error);
         alert("Payment failed! Please try again.");
@@ -123,225 +131,453 @@ export default function CheckoutPage() {
     }
   };
 
-  const inputClass =
-    "w-full bg-white border border-stone-300 rounded-md px-4 py-3 font-sans text-stone-900 focus:outline-none focus:border-stone-900 focus:ring-1 focus:ring-stone-900 transition-colors mt-1";
-  const labelClass = "font-sans text-sm text-stone-600 block";
-
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white font-sans text-stone-900">
+    <div className="min-h-screen bg-[#fcf9f8] text-[#1b1c1c] font-sans selection:bg-[#dee7c0]/50 flex flex-col">
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-      {/* LEFT COLUMN: FORM */}
-      <div className="w-full md:w-1/2 lg:w-3/5 bg-white xl:pl-40 lg:pl-20 md:pl-10 px-6 py-12 md:py-16">
-        <div className="max-w-xl mx-auto md:mx-0 md:ml-auto md:pr-10">
-          <div className="mb-8">
-            <Link href="/" className="font-serif text-3xl tracking-wide font-medium">
-              LIVAARA
+
+      {/* Material Symbols and Playfair Font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+
+      {/* Header */}
+      <header className="bg-[#fcf9f8]/80 docked full-width top-0 sticky z-50 backdrop-blur-md border-b border-[#c8c7be]/20 shadow-sm">
+        <div className="flex justify-between items-center w-full px-6 py-4 max-w-[1200px] mx-auto">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              className="hover:opacity-80 transition-opacity duration-300 active:scale-95 duration-200 flex items-center"
+            >
+              <span className="material-symbols-outlined text-[#596244]">arrow_back</span>
             </Link>
+            <h1 className="font-serif text-xl md:text-2xl text-[#1b1c1c] tracking-[0.2em] uppercase">
+              LIVAARA
+            </h1>
           </div>
+          <div className="flex items-center gap-6">
+            <nav className="hidden md:flex gap-8">
+              <Link
+                href="#"
+                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
+              >
+                Skin
+              </Link>
+              <Link
+                href="#"
+                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
+              >
+                Rituals
+              </Link>
+              <Link
+                href="#"
+                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
+              >
+                Philosophy
+              </Link>
+            </nav>
+            <button className="hover:opacity-80 transition-opacity duration-300 active:scale-95 duration-200 relative">
+              <span className="material-symbols-outlined text-[#596244]">shopping_bag</span>
+              <span className="absolute -top-1 -right-1 bg-[#596244] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
+              </span>
+            </button>
+          </div>
+        </div>
+      </header>
 
-          <form className="space-y-10" onSubmit={handlePayment}>
-            {/* Contact Section */}
-            <section>
-              <h2 className="font-serif text-2xl font-medium mb-4">Contact</h2>
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email or mobile phone number"
-                  className={inputClass}
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </section>
+      {/* Main Content */}
+      <main className="max-w-[1200px] w-full mx-auto px-6 md:px-16 py-12 flex-grow">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 mb-10 overflow-x-auto whitespace-nowrap">
+          <span className="font-sans text-xs uppercase tracking-wider text-[#596244] font-medium">
+            Cart
+          </span>
+          <span className="material-symbols-outlined text-[14px] text-[#c8c7be]">
+            chevron_right
+          </span>
+          <span className="font-sans text-xs uppercase tracking-wider text-[#1b1c1c] font-bold">
+            Information
+          </span>
+          <span className="material-symbols-outlined text-[14px] text-[#c8c7be]">
+            chevron_right
+          </span>
+          <span className="font-sans text-xs uppercase tracking-wider text-[#474741]/60">
+            Shipping
+          </span>
+          <span className="material-symbols-outlined text-[14px] text-[#c8c7be]">
+            chevron_right
+          </span>
+          <span className="font-sans text-xs uppercase tracking-wider text-[#474741]/60">
+            Payment
+          </span>
+        </nav>
 
-            {/* Delivery Section */}
-            <section>
-              <h2 className="font-serif text-2xl font-medium mb-4">Delivery</h2>
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="w-1/2">
-                    <label className={labelClass}>First name</label>
+        {/* Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start">
+          {/* Left Column: Form */}
+          <div className="space-y-12">
+            <form onSubmit={handlePayment} className="space-y-12">
+              {/* Contact Section */}
+              <section className="space-y-6">
+                <div className="flex justify-between items-baseline">
+                  <h2 className="font-serif text-2xl text-[#1b1c1c]">Contact</h2>
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-xs text-[#474741]">
+                      Already have an account?
+                    </span>
+                    <Link
+                      href="#"
+                      className="font-sans text-xs text-[#596244] underline decoration-[#596244]/30 hover:decoration-[#596244] transition-all"
+                    >
+                      Log in
+                    </Link>
+                  </div>
+                </div>
+                <div className="relative">
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email or mobile phone number"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                    required
+                  />
+                  <div className="mt-4 flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="newsletter"
+                      className="rounded border-[#c8c7be] text-[#596244] focus:ring-[#596244] w-4 h-4 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="newsletter"
+                      className="font-sans text-xs text-[#474741] cursor-pointer select-none"
+                    >
+                      Email me with Ayurvedic rituals and exclusive offers
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              {/* Shipping Address */}
+              <section className="space-y-6">
+                <h2 className="font-serif text-2xl text-[#1b1c1c]">Shipping Address</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="md:col-span-2">
+                    <select className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none appearance-none cursor-pointer text-[#1b1c1c]">
+                      <option>India</option>
+                      <option>United States</option>
+                      <option>Canada</option>
+                      <option>United Kingdom</option>
+                      <option>Europe</option>
+                    </select>
+                  </div>
+
+                  <div className="relative">
                     <input
                       type="text"
                       name="firstName"
+                      placeholder="First name"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className={inputClass}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                       required
                     />
                   </div>
-                  <div className="w-1/2">
-                    <label className={labelClass}>Last name</label>
+
+                  <div className="relative">
                     <input
                       type="text"
                       name="lastName"
+                      placeholder="Last name"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className={inputClass}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                       required
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className={labelClass}>Address</label>
-                  <input
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    className={inputClass}
-                    required
-                  />
-                </div>
+                  <div className="md:col-span-2 relative">
+                    <input
+                      type="text"
+                      name="address"
+                      placeholder="Address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                      required
+                    />
+                  </div>
 
-                <div>
-                  <label className={labelClass}>Apartment, suite, etc. (optional)</label>
-                  <input
-                    type="text"
-                    name="apartment"
-                    value={formData.apartment}
-                    onChange={handleChange}
-                    className={inputClass}
-                  />
-                </div>
+                  <div className="md:col-span-2 relative">
+                    <input
+                      type="text"
+                      name="apartment"
+                      placeholder="Apartment, suite, etc. (optional)"
+                      value={formData.apartment}
+                      onChange={handleChange}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                    />
+                  </div>
 
-                <div className="flex gap-4">
-                  <div className="w-1/3">
-                    <label className={labelClass}>City</label>
+                  <div className="relative">
                     <input
                       type="text"
                       name="city"
+                      placeholder="City"
                       value={formData.city}
                       onChange={handleChange}
-                      className={inputClass}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                       required
                     />
                   </div>
-                  <div className="w-1/3">
-                    <label className={labelClass}>State</label>
+
+                  <div className="grid grid-cols-2 gap-6">
                     <input
                       type="text"
                       name="state"
+                      placeholder="State"
                       value={formData.state}
                       onChange={handleChange}
-                      className={inputClass}
+                      className="bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                       required
                     />
-                  </div>
-                  <div className="w-1/3">
-                    <label className={labelClass}>PIN Code</label>
                     <input
                       type="text"
                       name="pinCode"
+                      placeholder="PIN / ZIP code"
                       value={formData.pinCode}
                       onChange={handleChange}
-                      className={inputClass}
+                      className="bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                      required
+                    />
+                  </div>
+
+                  <div className="md:col-span-2 relative">
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Phone number"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Phone</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className={inputClass}
-                    required
-                  />
+                {/* Razorpay Banner Info */}
+                <div className="mt-8 border border-[#596244]/20 rounded-xl p-6 bg-[#596244]/5 space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 rounded-full border-4 border-[#596244] bg-white flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-[#596244]"></div>
+                    </div>
+                    <span className="font-semibold text-[#1b1c1c] text-sm">
+                      Secure Checkout via Razorpay
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-500 pl-8 leading-relaxed">
+                    Razorpay supports credit cards, UPI (GPay, PhonePe, Paytm), net banking, and
+                    digital wallets. Your financial details are safe and fully encrypted.
+                  </p>
                 </div>
+
+                <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <Link
+                    href="/"
+                    className="font-sans text-sm text-[#474741] flex items-center gap-2 hover:text-[#596244] transition-colors group"
+                  >
+                    <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">
+                      arrow_back
+                    </span>
+                    Return to cart
+                  </Link>
+                  <button
+                    type="submit"
+                    disabled={isProcessing}
+                    className="w-full md:w-auto bg-[#596244] text-white px-10 py-5 rounded-lg font-sans text-sm font-semibold tracking-wider hover:bg-[#596244]/90 transition-all shadow-md active:scale-95 disabled:opacity-50 uppercase"
+                  >
+                    {isProcessing ? "PROCESSING..." : `PAY NOW (${formatCurrency(cartTotal)})`}
+                  </button>
+                </div>
+              </section>
+            </form>
+
+            {/* Trust Badges */}
+            <section className="pt-12 border-t border-[#c8c7be]/20 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+                <span className="material-symbols-outlined text-[#596244] text-[32px]">eco</span>
+                <h4 className="font-serif text-base text-[#1b1c1c] font-medium">Pure Botanicals</h4>
+                <p className="font-sans text-xs text-[#474741] leading-relaxed">
+                  Sourced from organic Himalayan foothills for maximum potency.
+                </p>
+              </div>
+              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+                <span className="material-symbols-outlined text-[#596244] text-[32px]">
+                  clinical_notes
+                </span>
+                <h4 className="font-serif text-base text-[#1b1c1c] font-medium">
+                  Clinically Proven
+                </h4>
+                <p className="font-sans text-xs text-[#474741] leading-relaxed">
+                  Ancient wisdom validated by modern dermatological science.
+                </p>
+              </div>
+              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+                <span className="material-symbols-outlined text-[#596244] text-[32px]">
+                  auto_awesome
+                </span>
+                <h4 className="font-serif text-base text-[#1b1c1c] font-medium">
+                  Sustainable Luxury
+                </h4>
+                <p className="font-sans text-xs text-[#474741] leading-relaxed">
+                  100% recyclable glass packaging and carbon-neutral shipping.
+                </p>
               </div>
             </section>
-
-            {/* Payment Section - UI Only */}
-            <section>
-              <h2 className="font-serif text-2xl font-medium mb-4">Payment</h2>
-              <p className="text-stone-500 text-sm mb-4">
-                All transactions are secure and encrypted.
-              </p>
-              <div className="border border-stone-300 rounded-md p-4 bg-stone-50">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full border-4 border-stone-900 bg-white"></div>
-                  <span className="font-medium">Razorpay (Cards, UPI, NetBanking)</span>
-                </div>
-              </div>
-            </section>
-
-            <button
-              type="submit"
-              disabled={isProcessing}
-              className="w-full bg-stone-900 text-white font-sans text-lg font-medium py-5 rounded-md hover:bg-stone-800 transition-colors flex items-center justify-center gap-2 mt-8 disabled:opacity-50"
-            >
-              {isProcessing ? "PROCESSING..." : `PAY NOW (${formatCurrency(cartTotal)})`}
-            </button>
-          </form>
-
-          <div className="mt-12 border-t border-stone-200 pt-6 flex justify-between text-xs text-stone-500">
-            <Link href="#" className="hover:text-stone-900 underline underline-offset-4">
-              Refund policy
-            </Link>
-            <Link href="#" className="hover:text-stone-900 underline underline-offset-4">
-              Shipping policy
-            </Link>
-            <Link href="#" className="hover:text-stone-900 underline underline-offset-4">
-              Privacy policy
-            </Link>
-            <Link href="#" className="hover:text-stone-900 underline underline-offset-4">
-              Terms of service
-            </Link>
           </div>
-        </div>
-      </div>
 
-      {/* RIGHT COLUMN: SUMMARY */}
-      <div className="w-full md:w-1/2 lg:w-2/5 bg-[#F8F5F0] border-t md:border-t-0 md:border-l border-stone-200 px-6 py-12 md:py-16 xl:pr-40 lg:pr-20 md:pr-10 border-l border-stone-200">
-        <div className="max-w-md mx-auto md:mx-0 md:mr-auto md:pl-10">
-          <div className="space-y-6">
-            {cartItems.map((item) => (
-              <div key={item.id} className="flex gap-4 items-center">
-                {/* Product Thumbnail with Badge */}
-                <div className="relative w-16 h-16 bg-white border border-stone-200 rounded-md flex-shrink-0">
-                  <div className="absolute -top-2 -right-2 w-5 h-5 bg-stone-500 text-white text-xs flex items-center justify-center rounded-full font-medium">
-                    {item.quantity}
+          {/* Right Column: Order Summary (Sticky) */}
+          <aside className="lg:sticky lg:top-32 space-y-6">
+            <div className="bg-[#f6f3f2] rounded-xl p-8 border border-[#c8c7be]/20 shadow-sm">
+              <h3 className="font-serif text-xl text-[#1b1c1c] mb-6">Order Summary</h3>
+
+              {/* Products List */}
+              <div className="space-y-6 mb-8">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex gap-4 items-center">
+                    <div className="relative w-16 h-20 bg-[#f9f6f1] rounded-lg overflow-hidden flex-shrink-0 border border-[#c8c7be]/20">
+                      <img
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                        src={item.image || "/images/lomaras-bottle.jpg"}
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "https://lh3.googleusercontent.com/aida-public/AB6AXuC-vs5ibK-6JoGJDV8iAjgwxkeh6Ge44aTR9kblYI_EDbRnd97Sa90gxROGb80NH_tpRket0UIXewFafpQmXnJoXXE6dwBTJ2Vson634JsyR5XdtnyVD6JJHq8nzZ-Xag1QNRvtyBcMeNeOgO2UJbabSQ7kwpQ4GiZSvTVYRYoZB8l1xN_XdR_uRZvfRMV4etXd3r43gcRCZ1_lrlLvocQr101zPWuwjr1tMy4tDBeEyW6htkNyc5kttAuQQl88adU8wTL1elDsa0Bh";
+                        }}
+                      />
+                      <span className="absolute -top-1 -right-1 bg-stone-700 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
+                        {item.quantity}
+                      </span>
+                    </div>
+                    <div className="flex-grow">
+                      <h4 className="font-serif text-base text-[#1b1c1c] font-medium leading-tight">
+                        {item.name}
+                      </h4>
+                      <p className="font-sans text-xs text-[#474741] mt-1">
+                        Ayurvedic Scalp Ritual
+                      </p>
+                    </div>
+                    <span className="font-sans text-sm font-semibold text-[#1b1c1c]">
+                      {formatCurrency(item.price * item.quantity)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Discount Code */}
+              <div className="flex gap-2 mb-8">
+                <input
+                  className="flex-grow bg-white border border-[#c8c7be] rounded-lg px-4 py-3 font-sans text-sm focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                  placeholder="Discount code"
+                  type="text"
+                />
+                <button className="bg-[#e5e2dd] text-[#1c1c19] px-6 py-3 rounded-lg font-sans text-sm font-medium hover:bg-stone-300 transition-colors">
+                  Apply
+                </button>
+              </div>
+
+              {/* Pricing Details */}
+              <div className="space-y-3 border-t border-[#c8c7be]/20 pt-6">
+                <div className="flex justify-between font-sans text-sm text-[#474741]">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-[#1b1c1c]">{formatCurrency(cartTotal)}</span>
+                </div>
+                <div className="flex justify-between font-sans text-sm text-[#474741]">
+                  <span>Shipping</span>
+                  <span className="font-semibold text-[#596244]">Free</span>
+                </div>
+                <div className="flex justify-between font-sans text-sm text-[#474741]">
+                  <span>Taxes</span>
+                  <span className="font-semibold text-[#1b1c1c]">{formatCurrency(0)}</span>
+                </div>
+
+                <div className="flex justify-between items-baseline pt-4 border-t border-[#c8c7be]/20">
+                  <span className="font-serif text-lg text-[#1b1c1c]">Total</span>
+                  <div className="text-right">
+                    <span className="text-xs text-[#474741] mr-2">INR</span>
+                    <span className="font-serif text-2xl font-semibold text-[#1b1c1c]">
+                      {formatCurrency(cartTotal)}
+                    </span>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="flex-grow">
-                  <h4 className="font-serif text-lg font-medium leading-tight">{item.name}</h4>
-                </div>
-
-                <div className="text-stone-900 font-medium">
-                  {formatCurrency(item.price * item.quantity)}
+            {/* Ritual Prompt */}
+            <div className="p-6 rounded-xl border border-[#596244]/20 bg-[#596244]/5">
+              <div className="flex items-start gap-4">
+                <span className="material-symbols-outlined text-[#596244]">self_improvement</span>
+                <div>
+                  <h5 className="font-sans text-sm font-semibold text-[#1b1c1c]">
+                    Complimentary Ritual
+                  </h5>
+                  <p className="font-sans text-xs text-[#474741] mt-1 leading-relaxed">
+                    Your order includes a personalized digital guided meditation based on your
+                    selected Ayurvedic profile.
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-stone-200 space-y-4">
-            <div className="flex justify-between items-center text-stone-600">
-              <span>Subtotal</span>
-              <span className="font-medium text-stone-900">{formatCurrency(cartTotal)}</span>
             </div>
-            <div className="flex justify-between items-center text-stone-600">
-              <span>Shipping</span>
-              <span className="font-medium text-[#6B8E7E]">Free</span>
-            </div>
-          </div>
+          </aside>
+        </div>
+      </main>
 
-          <div className="mt-6 pt-6 border-t border-stone-200 flex justify-between items-end">
-            <span className="font-sans text-lg">Total</span>
-            <span className="font-serif text-3xl font-medium text-stone-900">
-              <span className="text-stone-500 text-sm font-sans font-normal mr-2">INR</span>
-              {formatCurrency(cartTotal)}
+      {/* Footer */}
+      <footer className="w-full bg-[#f9f6f1] border-t border-[#c8c7be]/30 py-12 px-6 md:px-16 mt-12">
+        <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="space-y-2 text-center md:text-left">
+            <span className="font-serif text-xl tracking-[0.2em] text-[#1b1c1c] uppercase">
+              LIVAARA
             </span>
+            <p className="font-sans text-xs text-[#474741]">
+              © 2026 LIVAARA. Crafted with Ayurvedic Wisdom.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
+            <Link
+              href="#"
+              className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              href="#"
+              className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
+            >
+              Terms of Service
+            </Link>
+            <Link
+              href="#"
+              className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
+            >
+              Shipping Information
+            </Link>
+            <Link
+              href="#"
+              className="font-sans text-xs text-[#596244] font-semibold hover:opacity-80 transition-opacity flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-[16px]">lock</span>
+              Secure Checkout
+            </Link>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }

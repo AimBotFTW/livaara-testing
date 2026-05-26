@@ -67,8 +67,18 @@ export function CartDrawer() {
           ) : (
             cartItems.map((item) => (
               <div key={item.id} className="flex gap-4 border-b border-stone-200 pb-6">
-                {/* Image Placeholder */}
-                <div className="w-24 h-32 bg-stone-200 flex-shrink-0" />
+                {/* Product Image */}
+                <div className="w-24 h-32 bg-stone-100 border border-stone-200 rounded-md overflow-hidden flex-shrink-0">
+                  <img
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    src={item.image || "/images/lomaras-bottle.jpg"}
+                    onError={(e) => {
+                      e.currentTarget.src =
+                        "https://lh3.googleusercontent.com/aida-public/AB6AXuC-vs5ibK-6JoGJDV8iAjgwxkeh6Ge44aTR9kblYI_EDbRnd97Sa90gxROGb80NH_tpRket0UIXewFafpQmXnJoXXE6dwBTJ2Vson634JsyR5XdtnyVD6JJHq8nzZ-Xag1QNRvtyBcMeNeOgO2UJbabSQ7kwpQ4GiZSvTVYRYoZB8l1xN_XdR_uRZvfRMV4etXd3r43gcRCZ1_lrlLvocQr101zPWuwjr1tMy4tDBeEyW6htkNyc5kttAuQQl88adU8wTL1elDsa0Bh";
+                    }}
+                  />
+                </div>
 
                 <div className="flex flex-col justify-between flex-grow">
                   <div>
