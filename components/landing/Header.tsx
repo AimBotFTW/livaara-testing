@@ -14,7 +14,7 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [open, setOpen] = useState(false);
-  const { toggleCart } = useCart();
+  const { toggleCart, addToCart } = useCart();
 
   useEffect(() => {
     const onScroll = () => {
@@ -58,6 +58,12 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
           <button
             onClick={() => {
               trackShopNowClick();
+              addToCart({
+                id: "a0000000-0000-4000-8000-000000000001",
+                name: "Lomaras™ Ayurvedic Scalp Oil",
+                price: shopPrice,
+                quantity: 1,
+              });
               toggleCart(true);
             }}
             className="hidden sm:inline-flex items-center justify-center px-5 py-2.5 text-xs uppercase tracking-[0.18em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm"
@@ -99,6 +105,12 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
               onClick={() => {
                 trackShopNowClick();
                 setOpen(false);
+                addToCart({
+                  id: "a0000000-0000-4000-8000-000000000001",
+                  name: "Lomaras™ Ayurvedic Scalp Oil",
+                  price: shopPrice,
+                  quantity: 1,
+                });
                 toggleCart(true);
               }}
               className="mt-2 inline-flex items-center justify-center px-5 py-3 text-xs uppercase tracking-[0.18em] bg-primary text-primary-foreground rounded-sm"

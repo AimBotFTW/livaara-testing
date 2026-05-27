@@ -4,8 +4,9 @@ import { Footer } from "@/components/landing/Footer";
 import { Star, CheckCircle2 } from "lucide-react";
 import { getApprovedReviews } from "@/app/actions/reviews";
 import { getHeroProduct } from "@/lib/products";
-import { AddToCartButton } from "@/components/product/AddToCartButton";
+import { ProductHeroActions } from "@/components/product/ProductHeroActions";
 import { ReviewSectionHeader } from "@/components/product/ReviewSectionHeader";
+import { InteractiveBotanicals } from "@/components/InteractiveBotanicals";
 
 export default async function ProductPage() {
   const [product, reviews] = await Promise.all([getHeroProduct(), getApprovedReviews()]);
@@ -59,7 +60,7 @@ export default async function ProductPage() {
               stimulate growth and nourish roots from within.
             </p>
 
-            <AddToCartButton
+            <ProductHeroActions
               productId={product.id}
               productName={product.name}
               price={product.price}
@@ -81,60 +82,8 @@ export default async function ProductPage() {
         </div>
       </section>
 
-      {/* 2. INGREDIENT SPOTLIGHT */}
-      <section className="bg-white border-y border-stone-200 py-20 md:py-32">
-        <div className="container-px mx-auto max-w-7xl">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-serif text-3xl md:text-4xl text-stone-900 mb-4">
-              Golden Ingredients
-            </h2>
-            <p className="text-stone-500">
-              The purest botanical extracts sourced directly from traditional farms.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16">
-            <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-24 rounded-full bg-[#F8F5F0] border border-[#C8A96A]/30 mb-6 flex items-center justify-center p-4">
-                <div className="w-full h-full rounded-full border border-dashed border-[#C8A96A] flex items-center justify-center text-[#C8A96A] text-xs font-serif uppercase tracking-widest">
-                  Ashwa
-                </div>
-              </div>
-              <h3 className="font-serif text-2xl text-stone-900 mb-3">Ashwagandha</h3>
-              <p className="text-stone-600 text-sm leading-relaxed">
-                Known as Indian Ginseng, it drastically reduces cortisol levels on the scalp. This
-                actively prevents stress-induced hair thinning and shedding.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-24 rounded-full bg-[#F8F5F0] border border-[#C8A96A]/30 mb-6 flex items-center justify-center p-4">
-                <div className="w-full h-full rounded-full border border-dashed border-[#C8A96A] flex items-center justify-center text-[#C8A96A] text-xs font-serif uppercase tracking-widest">
-                  Bhrin
-                </div>
-              </div>
-              <h3 className="font-serif text-2xl text-stone-900 mb-3">Bhringraj</h3>
-              <p className="text-stone-600 text-sm leading-relaxed">
-                The literal 'King of Hair' in Ayurveda. It awakens dormant hair follicles,
-                accelerating natural growth and restoring deep luster to dull strands.
-              </p>
-            </div>
-
-            <div className="flex flex-col items-center text-center">
-              <div className="w-24 h-24 rounded-full bg-[#F8F5F0] border border-[#C8A96A]/30 mb-6 flex items-center justify-center p-4">
-                <div className="w-full h-full rounded-full border border-dashed border-[#C8A96A] flex items-center justify-center text-[#C8A96A] text-xs font-serif uppercase tracking-widest">
-                  Rose
-                </div>
-              </div>
-              <h3 className="font-serif text-2xl text-stone-900 mb-3">Rosemary</h3>
-              <p className="text-stone-600 text-sm leading-relaxed">
-                A potent vasodilator that increases blood circulation to the scalp. It delivers
-                critical oxygen and nutrients directly to the hair roots.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 2. INGREDIENT SPOTLIGHT — Interactive Root Network */}
+      <InteractiveBotanicals />
 
       {/* 3. THE RITUAL */}
       <section className="py-20 md:py-32 container-px mx-auto max-w-5xl">

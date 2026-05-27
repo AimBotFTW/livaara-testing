@@ -1,4 +1,9 @@
-import type { Product } from "@/lib/types/database";
+"use client";
+
+import { useCart } from "@/lib/context/CartContext";
+import { useRouter } from "next/navigation";
+import { trackShopNowClick } from "@/lib/analytics";
+import type { Product as ProductType } from "@/lib/types/database";
 import { formatInr } from "@/lib/utils";
 import { LandingImage } from "./LandingImage";
 
@@ -10,10 +15,12 @@ const DEFAULT_BENEFITS = [
 ];
 
 type ProductSectionProps = {
-  product: Product;
+  product: ProductType;
 };
 
 export function Product({ product }: ProductSectionProps) {
+  const { addToCart } = useCart();
+  const router = useRouter();
   const benefits = DEFAULT_BENEFITS;
 
   return (
@@ -43,6 +50,21 @@ export function Product({ product }: ProductSectionProps) {
             >
               Free Dosha Consult
             </a>
+            <button
+              onClick={() => {
+                trackShopNowClick();
+                addToCart({
+                  id: product.id,
+                  name: product.name,
+                  price: product.price,
+                  quantity: 1,
+                });
+                router.push("/checkout");
+              }}
+              className="inline-flex items-center justify-center px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm hover-scale shadow-lg"
+            >
+              Buy Now
+            </button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground fade-up fade-up-3">
             Free shipping across India · 30-day ritual guarantee
