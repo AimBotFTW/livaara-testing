@@ -45,7 +45,9 @@ export function Product({ product }: ProductSectionProps) {
           <div className="mt-10 flex items-center gap-6 flex-wrap">
             <span className="font-serif text-4xl text-primary">{formatInr(product.price)}</span>
             <a
-              href="https://wa.me/+918511414551"
+              href="https://wa.me/918511414551?text=Hi%20I%20want%20a%20Dosha%20consultation"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-4 text-xs uppercase tracking-[0.2em] bg-accent text-accent-foreground hover:bg-accent/90 transition-colors rounded-sm hover-scale"
             >
               Free Dosha Consult

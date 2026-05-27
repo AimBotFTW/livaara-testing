@@ -21,7 +21,10 @@ export async function createClient() {
       },
       setAll(cookiesToSet: CookieToSet[]) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const { maxAge, expires, ...sessionOptions } = options;
+            cookieStore.set(name, value, sessionOptions);
+          });
         } catch {
           // setAll from Server Component — middleware will refresh sessions later
         }

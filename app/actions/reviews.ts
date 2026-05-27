@@ -33,8 +33,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
       is_verified_purchase,
       is_approved,
       created_at,
-      updated_at,
-      customers ( name )
+      updated_at
     `,
     )
     .eq("is_approved", true)
@@ -46,11 +45,9 @@ export async function getApprovedReviews(): Promise<Review[]> {
   }
 
   return data.map((r) => {
-    const customer = Array.isArray(r.customers) ? r.customers[0] : r.customers;
     return {
       ...r,
-      customers: undefined,
-      customer_name: (customer as { name: string } | null)?.name ?? null,
+      customer_name: "Anonymous",
     } as Review;
   });
 }
@@ -76,8 +73,7 @@ export async function getAllReviews(): Promise<Review[]> {
       is_verified_purchase,
       is_approved,
       created_at,
-      updated_at,
-      customers ( name )
+      updated_at
     `,
     )
     .order("created_at", { ascending: false });
@@ -88,11 +84,9 @@ export async function getAllReviews(): Promise<Review[]> {
   }
 
   return data.map((r) => {
-    const customer = Array.isArray(r.customers) ? r.customers[0] : r.customers;
     return {
       ...r,
-      customers: undefined,
-      customer_name: (customer as { name: string } | null)?.name ?? null,
+      customer_name: "Anonymous",
     } as Review;
   });
 }

@@ -142,6 +142,18 @@ export function ShoppableVideoCarousel({ product }: { product: Product }) {
         {/* Empty padding block for end alignment on scroll */}
         <div className="w-[5vw] flex-shrink-0 hidden md:block"></div>
       </div>
+
+      {/* Instagram Link CTA */}
+      <div className="mt-8 flex justify-center">
+        <a
+          href="https://www.instagram.com/livaara__?igsh=MWt1YXljMTh1aDlkdg=="
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group flex items-center gap-2 px-8 py-4 bg-transparent border border-stone-900 text-stone-900 rounded-full font-sans text-sm font-medium tracking-wide hover:bg-[#596244] hover:text-[#F8F5F0] hover:border-[#596244] transition-all shadow-sm hover:shadow-md"
+        >
+          <span>Visit our Instagram for more insights</span>
+        </a>
+      </div>
     </section>
   );
 }

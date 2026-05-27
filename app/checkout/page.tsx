@@ -25,7 +25,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function CheckoutPage() {
-  const { cartItems, cartTotal, toggleCart } = useCart();
+  const { cartItems, cartTotal, toggleCart, updateQuantity, removeFromCart } = useCart();
   const router = useRouter();
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,7 +47,8 @@ export default function CheckoutPage() {
 
   const handlePayment = async (e: FormEvent) => {
     e.preventDefault();
-    if (cartItems.length === 0) return alert("Your cart is empty");
+    const validItems = cartItems.filter((item) => item.quantity > 0);
+    if (validItems.length === 0) return alert("Your cart is empty");
 
     setIsProcessing(true);
 
@@ -56,7 +57,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cartItems, formData }),
+        body: JSON.stringify({ cartItems: validItems, formData }),
       });
 
       const order = await res.json();
@@ -131,7 +132,7 @@ export default function CheckoutPage() {
 
       {/* Header */}
       <header className="bg-[#fcf9f8]/80 docked full-width top-0 sticky z-50 backdrop-blur-md border-b border-[#c8c7be]/20 shadow-sm">
-        <div className="flex justify-between items-center w-full px-6 py-4 max-w-[1200px] mx-auto">
+        <div className="flex justify-between items-center w-full px-4 md:px-6 py-4 max-w-[1200px] mx-auto">
           <div className="flex items-center gap-4">
             <Link
               href="/"
@@ -144,26 +145,6 @@ export default function CheckoutPage() {
             </h1>
           </div>
           <div className="flex items-center gap-6">
-            <nav className="hidden md:flex gap-8">
-              <Link
-                href="#"
-                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
-              >
-                Skin
-              </Link>
-              <Link
-                href="#"
-                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
-              >
-                Rituals
-              </Link>
-              <Link
-                href="#"
-                className="font-sans text-sm text-[#474741] hover:opacity-80 transition-opacity"
-              >
-                Philosophy
-              </Link>
-            </nav>
             <button className="hover:opacity-80 transition-opacity duration-300 active:scale-95 duration-200 relative">
               <span className="material-symbols-outlined text-[#596244]">shopping_bag</span>
               <span className="absolute -top-1 -right-1 bg-[#596244] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
@@ -175,7 +156,7 @@ export default function CheckoutPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[1200px] w-full mx-auto px-6 md:px-16 py-12 flex-grow">
+      <main className="max-w-[1200px] w-full mx-auto px-4 md:px-16 py-8 md:py-12 flex-grow">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-2 mb-10 overflow-x-auto whitespace-nowrap">
           <span className="font-sans text-xs uppercase tracking-wider text-[#596244] font-medium">
@@ -202,26 +183,12 @@ export default function CheckoutPage() {
         </nav>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start">
+        <div className="flex flex-col-reverse lg:grid lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start">
           {/* Left Column: Form */}
           <div className="space-y-12">
             <form onSubmit={handlePayment} className="space-y-12">
               {/* Contact Section */}
               <section className="space-y-6">
-                <div className="flex justify-between items-baseline">
-                  <h2 className="font-serif text-2xl text-[#1b1c1c]">Contact</h2>
-                  <div className="flex items-center gap-2">
-                    <span className="font-sans text-xs text-[#474741]">
-                      Already have an account?
-                    </span>
-                    <Link
-                      href="#"
-                      className="font-sans text-xs text-[#596244] underline decoration-[#596244]/30 hover:decoration-[#596244] transition-all"
-                    >
-                      Log in
-                    </Link>
-                  </div>
-                </div>
                 <div className="relative">
                   <input
                     type="email"
@@ -321,7 +288,7 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <input
                       type="text"
                       name="state"
@@ -371,7 +338,7 @@ export default function CheckoutPage() {
                   </p>
                 </div>
 
-                <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="pt-6 flex flex-col-reverse md:flex-row items-center justify-between gap-6">
                   <Link
                     href="/"
                     className="font-sans text-sm text-[#474741] flex items-center gap-2 hover:text-[#596244] transition-colors group"
@@ -445,17 +412,42 @@ export default function CheckoutPage() {
                             "https://lh3.googleusercontent.com/aida-public/AB6AXuC-vs5ibK-6JoGJDV8iAjgwxkeh6Ge44aTR9kblYI_EDbRnd97Sa90gxROGb80NH_tpRket0UIXewFafpQmXnJoXXE6dwBTJ2Vson634JsyR5XdtnyVD6JJHq8nzZ-Xag1QNRvtyBcMeNeOgO2UJbabSQ7kwpQ4GiZSvTVYRYoZB8l1xN_XdR_uRZvfRMV4etXd3r43gcRCZ1_lrlLvocQr101zPWuwjr1tMy4tDBeEyW6htkNyc5kttAuQQl88adU8wTL1elDsa0Bh";
                         }}
                       />
-                      <span className="absolute -top-1 -right-1 bg-stone-700 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center">
-                        {item.quantity}
-                      </span>
                     </div>
                     <div className="flex-grow">
                       <h4 className="font-serif text-base text-[#1b1c1c] font-medium leading-tight">
                         {item.name}
                       </h4>
-                      <p className="font-sans text-xs text-[#474741] mt-1">
+                      <p className="font-sans text-xs text-[#474741] mt-1 mb-2">
                         Ayurvedic Scalp Ritual
                       </p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center border border-[#c8c7be] rounded-md overflow-hidden bg-white">
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                            className="px-2 py-1 text-[#474741] hover:bg-[#f6f3f2] transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">remove</span>
+                          </button>
+                          <span className="px-2 font-sans text-xs font-medium text-[#1b1c1c] w-6 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="px-2 py-1 text-[#474741] hover:bg-[#f6f3f2] transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">add</span>
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => updateQuantity(item.id, 0)}
+                          className="text-xs text-[#474741] hover:text-red-500 underline decoration-[#474741]/30 hover:decoration-red-500 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      </div>
                     </div>
                     <span className="font-sans text-sm font-semibold text-[#1b1c1c]">
                       {formatCurrency(item.price * item.quantity)}
@@ -523,7 +515,7 @@ export default function CheckoutPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full bg-[#f9f6f1] border-t border-[#c8c7be]/30 py-12 px-6 md:px-16 mt-12">
+      <footer className="w-full bg-[#f9f6f1] border-t border-[#c8c7be]/30 py-12 px-4 md:px-16 mt-12">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="space-y-2 text-center md:text-left">
             <span className="font-serif text-xl tracking-[0.2em] text-[#1b1c1c] uppercase">

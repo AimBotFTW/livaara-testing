@@ -10,6 +10,7 @@ export type DashboardMetrics = {
   totalRevenue: number;
   totalOrders: number;
   inventoryCount: number;
+  customerCount: number;
   revenueChangePercent: number | null;
 };
 
@@ -71,13 +72,14 @@ function unwrapRelation<T>(rel: T | T[] | null | undefined): T | null {
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = getClient();
   if (!supabase) {
-    return { totalRevenue: 0, totalOrders: 0, inventoryCount: 0, revenueChangePercent: null };
+    return { totalRevenue: 0, totalOrders: 0, inventoryCount: 0, customerCount: 0, revenueChangePercent: null };
   }
 
-  const [{ data: paidOrders }, { count: orderCount }, { data: products }] = await Promise.all([
+  const [{ data: paidOrders }, { count: orderCount }, { data: products }, { count: customerCount }] = await Promise.all([
     supabase.from("orders").select("total_amount, created_at").eq("payment_status", "paid"),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("products").select("inventory_count"),
+    supabase.from("customers").select("*", { count: "exact", head: true }),
   ]);
 
   const totalRevenue = paidOrders?.reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0;
@@ -104,6 +106,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     totalRevenue,
     totalOrders: orderCount ?? 0,
     inventoryCount,
+    customerCount: customerCount ?? 0,
     revenueChangePercent,
   };
 }
