@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         .single();
 
       if (productError || !product) {
-        return NextResponse.json({ error: `Product not found: ${item.id}` }, { status: 404 });
+        return NextResponse.json({ error: `Product not found: ${item.id}` }, { status: 400 });
       }
 
       if (!product.is_active) {
