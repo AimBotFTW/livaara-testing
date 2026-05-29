@@ -5,6 +5,7 @@ import { getApprovedReviews } from "@/app/actions/reviews";
 import { getProductBySlug, getAllProductSlugs } from "@/lib/products";
 import { ProductHeroActions } from "@/components/product/ProductHeroActions";
 import { ReviewSectionHeader } from "@/components/product/ReviewSectionHeader";
+import { ProductFeatures } from "@/components/product/ProductFeatures";
 import { InteractiveBotanicals } from "@/components/InteractiveBotanicals";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { notFound } from "next/navigation";
@@ -87,18 +88,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               price={product.price}
             />
 
-            <div className="bg-stone-50 border border-stone-200 p-4 rounded-md flex items-start gap-4">
-              <div className="text-[#C8A96A] mt-1">
-                <CheckCircle2 size={20} />
-              </div>
-              <div>
-                <p className="font-medium text-stone-900 text-sm mb-1">Authentic Formulation</p>
-                <p className="text-stone-500 text-xs leading-relaxed">
-                  Rooted in ancient Ayurvedic texts. Free from parabens, sulfates, and synthetic
-                  fragrances. 100% natural and cruelty-free.
-                </p>
-              </div>
-            </div>
+            <ProductFeatures />
           </div>
         </div>
       </section>
