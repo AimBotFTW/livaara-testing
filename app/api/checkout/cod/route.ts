@@ -194,7 +194,9 @@ export async function POST(req: Request) {
     // Send Transactional Emails
     const resendApiKey = process.env.RESEND_API_KEY;
     if (!resendApiKey) {
-      console.error("[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent");
+      console.error(
+        "[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent",
+      );
     }
     const resend = new Resend(resendApiKey ?? "");
     const addressString = `${shippingAddress.firstName} ${shippingAddress.lastName}\n${shippingAddress.address} ${shippingAddress.apartment ? shippingAddress.apartment + " " : ""}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}`;

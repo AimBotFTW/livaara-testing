@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-
 export async function middleware(request: NextRequest) {
-  const { response: res, user: middlewareUser } = await updateSession(request);
+  const result = await updateSession(request);
+  if (result instanceof NextResponse) return result;
+  const { response: res, user: middlewareUser } = result;
 
   // Enforce admin allowlist by email (comma-separated).
   const pathname = request.nextUrl.pathname;

@@ -553,8 +553,6 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-
-
               {/* Pricing Details */}
               <div className="space-y-3 border-t border-[#c8c7be]/20 pt-6">
                 <div className="flex justify-between font-sans text-sm text-[#474741]">

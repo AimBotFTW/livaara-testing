@@ -56,9 +56,7 @@ export function CartProvider({
     if (quantity <= 0) {
       setCartItems((prev) => prev.filter((i) => i.id !== id));
     } else {
-      setCartItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, quantity } : i)),
-      );
+      setCartItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
     }
   };
 
