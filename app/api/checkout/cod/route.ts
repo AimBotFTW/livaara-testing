@@ -9,9 +9,14 @@ import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
 
 const limiters = new Map<string, RateLimiter>();
+const MAX_TRACKED_IPS = 5000;
 
 function getLimiter(ip: string) {
   if (!limiters.has(ip)) {
+    if (limiters.size >= MAX_TRACKED_IPS) {
+      const firstKey = limiters.keys().next().value;
+      if (firstKey !== undefined) limiters.delete(firstKey);
+    }
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 5, interval: "minute" }));
   }
   return limiters.get(ip)!;
@@ -172,6 +177,7 @@ export async function POST(req: Request) {
 
     if (itemsError) {
       console.error("Failed to insert order items:", itemsError);
+      return NextResponse.json({ error: "Failed to create order items" }, { status: 500 });
     }
 
     // Decrement inventory securely via RPC
@@ -186,7 +192,11 @@ export async function POST(req: Request) {
     }
 
     // Send Transactional Emails
-    const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      console.error("[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent");
+    }
+    const resend = new Resend(resendApiKey ?? "");
     const addressString = `${shippingAddress.firstName} ${shippingAddress.lastName}\n${shippingAddress.address} ${shippingAddress.apartment ? shippingAddress.apartment + " " : ""}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}`;
 
     try {

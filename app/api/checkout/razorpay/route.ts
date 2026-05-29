@@ -5,9 +5,14 @@ import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
 
 const limiters = new Map<string, RateLimiter>();
+const MAX_TRACKED_IPS = 5000;
 
 function getLimiter(ip: string) {
   if (!limiters.has(ip)) {
+    if (limiters.size >= MAX_TRACKED_IPS) {
+      const firstKey = limiters.keys().next().value;
+      if (firstKey !== undefined) limiters.delete(firstKey);
+    }
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 5, interval: "minute" }));
   }
   return limiters.get(ip)!;

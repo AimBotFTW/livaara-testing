@@ -19,6 +19,7 @@ type CartContextType = {
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   toggleCart: (isOpen: boolean) => void;
+  clearCart: () => void;
   cartTotal: number;
 };
 
@@ -52,9 +53,13 @@ export function CartProvider({
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    setCartItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity: Math.max(0, quantity) } : i)),
-    );
+    if (quantity <= 0) {
+      setCartItems((prev) => prev.filter((i) => i.id !== id));
+    } else {
+      setCartItems((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, quantity } : i)),
+      );
+    }
   };
 
   const removeFromCart = (id: string) => {
@@ -63,6 +68,10 @@ export function CartProvider({
 
   const toggleCart = (isOpen: boolean) => {
     setIsCartOpen(isOpen);
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
   };
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -77,6 +86,7 @@ export function CartProvider({
         updateQuantity,
         removeFromCart,
         toggleCart,
+        clearCart,
         cartTotal,
       }}
     >

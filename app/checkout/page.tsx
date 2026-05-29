@@ -26,7 +26,7 @@ function formatCurrency(amount: number) {
 }
 
 export default function CheckoutPage() {
-  const { cartItems, cartTotal, toggleCart, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, cartTotal, toggleCart, clearCart, updateQuantity, removeFromCart } = useCart();
   const router = useRouter();
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -54,8 +54,6 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
-    setIsProcessing(true);
-
     if (paymentMethod === "cod") {
       try {
         const res = await fetch("/api/checkout/cod", {
@@ -67,6 +65,7 @@ export default function CheckoutPage() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to create order");
 
+        clearCart();
         toggleCart(false);
         if (data.orderNumber) {
           router.push(`/order-success?id=${data.orderId}&order_number=${data.orderNumber}`);
@@ -111,6 +110,7 @@ export default function CheckoutPage() {
             // Webhook handles the actual database update and emails asynchronously
             trackPaymentSuccess(order.internalOrderId, order.amount / 100);
 
+            clearCart();
             toggleCart(false);
             if (order.internalOrderNumber) {
               router.push(
@@ -263,13 +263,10 @@ export default function CheckoutPage() {
                 <h2 className="font-serif text-2xl text-[#1b1c1c]">Shipping Address</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <select className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none appearance-none cursor-pointer text-[#1b1c1c]">
-                      <option>India</option>
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>United Kingdom</option>
-                      <option>Europe</option>
-                    </select>
+                    <div className="w-full border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base text-[#1b1c1c] flex items-center justify-between">
+                      <span>India</span>
+                      <span className="text-xs text-[#474741]/60">Shipping within India only</span>
+                    </div>
                   </div>
 
                   <div className="relative">
@@ -556,17 +553,7 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Discount Code */}
-              <div className="flex gap-2 mb-8">
-                <input
-                  className="flex-grow bg-white border border-[#c8c7be] rounded-lg px-4 py-3 font-sans text-sm focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                  placeholder="Discount code"
-                  type="text"
-                />
-                <button className="bg-[#e5e2dd] text-[#1c1c19] px-6 py-3 rounded-lg font-sans text-sm font-medium hover:bg-stone-300 transition-colors">
-                  Apply
-                </button>
-              </div>
+
 
               {/* Pricing Details */}
               <div className="space-y-3 border-t border-[#c8c7be]/20 pt-6">
@@ -633,13 +620,13 @@ export default function CheckoutPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
             <Link
-              href="/"
+              href="/privacy"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/"
+              href="/terms"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Terms of Service
@@ -651,7 +638,7 @@ export default function CheckoutPage() {
               Shipping Information
             </Link>
             <Link
-              href="/"
+              href="#"
               className="font-sans text-xs text-[#596244] font-semibold hover:opacity-80 transition-opacity flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-[16px]">lock</span>

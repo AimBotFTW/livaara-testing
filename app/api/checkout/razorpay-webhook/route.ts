@@ -125,31 +125,40 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
       }
 
-      // 2. Fetch order items to decrement inventory
+      // 2. Fetch order items to decrement inventory and build email data
       const { data: items, error: itemsError } = await supabase
         .from("order_items")
-        .select("product_id, quantity")
+        .select("product_id, quantity, price_at_purchase, products ( name )")
         .eq("order_id", order.id);
+
+      const itemsForEmail: Array<{ name: string; quantity: number; price: number }> = [];
 
       if (itemsError || !items) {
         console.error("Failed to fetch order items:", itemsError);
       } else {
-        // Decrement inventory securely via RPC
         for (const item of items) {
+          const product = Array.isArray(item.products) ? item.products[0] : item.products;
+          itemsForEmail.push({
+            name: (product as { name: string } | null)?.name ?? "Lomaras™ Ayurvedic Scalp Oil",
+            quantity: item.quantity,
+            price: Number(item.price_at_purchase),
+          });
           const { error: rpcError } = await supabase.rpc("decrement_product_inventory", {
             p_product_id: item.product_id,
             p_qty: item.quantity,
           });
           if (rpcError) {
             console.error("Failed to decrement inventory:", rpcError);
-            // We don't throw here to ensure the order stays paid and emails are sent,
-            // but in a robust system we'd flag this for admin review.
           }
         }
       }
 
       // 3. Send Transactional Emails
-      const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+      const resendApiKey = process.env.RESEND_API_KEY;
+      if (!resendApiKey) {
+        console.error("[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent");
+      }
+      const resend = new Resend(resendApiKey ?? "");
       const customer = (Array.isArray(order.customers)
         ? order.customers[0]
         : order.customers) as unknown as { name: string; email: string };
@@ -170,6 +179,8 @@ export async function POST(req: Request) {
                 customerName: sa.firstName,
                 shippingAddress: addressString,
                 totalAmount: order.total_amount,
+                items: itemsForEmail,
+                paymentMethod: "razorpay" as const,
               }),
             ),
           });
@@ -190,6 +201,8 @@ export async function POST(req: Request) {
                   customerName: customer.name || sa.firstName,
                   customerEmail: customer.email,
                   totalAmount: order.total_amount,
+                  items: itemsForEmail,
+                  paymentMethod: "razorpay" as const,
                 }),
               ),
             });
