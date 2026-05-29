@@ -51,12 +51,15 @@ export function Product({ product }: ProductSectionProps) {
                 onClick={() => {
                   trackHeroCTA();
                   trackShopNowClick();
-                  addToCart({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: 1,
-                  });
+                  addToCart(
+                    {
+                      id: product.id,
+                      name: product.name,
+                      price: product.price,
+                      quantity: 1,
+                    },
+                    false
+                  );
                   router.push("/checkout");
                 }}
                 className="inline-flex items-center justify-center px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm hover-scale shadow-lg"
@@ -86,10 +89,10 @@ export function Product({ product }: ProductSectionProps) {
               <LandingImage
                 src="/images/lomaras-bottle.jpg"
                 alt="Lomaras Ayurvedic Scalp Oil bottle"
-                width={1024}
-                height={1024}
+                width={941}
+                height={1672}
                 sizes="(max-width: 768px) 100vw, 50vw"
-                className="w-full h-full object-cover object-top image-float"
+                className="w-full h-full object-cover object-center image-float"
               />
             </Link>
           </div>

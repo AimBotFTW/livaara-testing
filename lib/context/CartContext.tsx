@@ -15,7 +15,7 @@ type CartContextType = {
   cartItems: CartItem[];
   isCartOpen: boolean;
   heroProduct: { id: string; name: string; price: number } | null;
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem, openCart?: boolean) => void;
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   toggleCart: (isOpen: boolean) => void;
@@ -35,7 +35,7 @@ export function CartProvider({
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [heroProduct] = useState(initialHeroProduct || null);
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = (item: CartItem, openCart = true) => {
     trackAddToCart();
     setCartItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
@@ -46,7 +46,9 @@ export function CartProvider({
       }
       return [...prev, item];
     });
-    setIsCartOpen(true);
+    if (openCart) {
+      setIsCartOpen(true);
+    }
   };
 
   const updateQuantity = (id: string, quantity: number) => {

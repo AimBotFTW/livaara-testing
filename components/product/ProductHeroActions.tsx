@@ -38,7 +38,7 @@ export function ProductHeroActions({
     if (buying) return;
     setBuying(true);
     trackShopNowClick();
-    addToCart({ id: productId, name: productName, price, quantity: 1 });
+    addToCart({ id: productId, name: productName, price, quantity: 1 }, false);
     router.push("/checkout");
   };
 

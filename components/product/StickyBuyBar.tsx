@@ -25,7 +25,7 @@ export function StickyBuyBar({
         <button
           type="button"
           onClick={() => {
-            addToCart({ id: productId, name: productName, price, quantity: 1 });
+            addToCart({ id: productId, name: productName, price, quantity: 1 }, false);
             router.push("/checkout");
           }}
           className="shrink-0 bg-stone-900 text-white px-6 py-3 text-xs font-semibold tracking-[0.22em] uppercase border border-stone-900 hover:bg-stone-800 transition-colors"
