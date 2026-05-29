@@ -38,6 +38,11 @@ export function GlobalTelemetry({ metrics }: GlobalTelemetryProps) {
         <p className="text-[24px] md:text-[32px] font-display-lg font-bold text-on-surface tracking-tight leading-none">
           {formatAdminCurrency(metrics.totalRevenue)}
         </p>
+        {metrics.pendingCodRevenue > 0 && (
+          <p className="text-[12px] text-[#C8A96A] mt-2">
+            + {formatAdminCurrency(metrics.pendingCodRevenue)} COD pending
+          </p>
+        )}
       </div>
 
       {/* Orders */}

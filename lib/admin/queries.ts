@@ -12,15 +12,18 @@ export type DashboardMetrics = {
   inventoryCount: number;
   customerCount: number;
   revenueChangePercent: number | null;
+  pendingCodRevenue: number;
 };
 
 export type RecentOrderRow = {
   id: string;
   displayId: string;
   customerName: string;
+  prakriti: string[] | null;
   createdAt: string;
   totalAmount: number;
   orderStatus: OrderStatus;
+  paymentMethod?: string;
 };
 
 export type CustomerDirectoryRow = {
@@ -38,6 +41,8 @@ export type OrderDetail = {
   displayId: string;
   orderStatus: OrderStatus;
   paymentStatus: string;
+  paymentMethod: string;
+  codCharge: number;
   totalAmount: number;
   createdAt: string;
   razorpayOrderId: string | null;
@@ -47,6 +52,7 @@ export type OrderDetail = {
     name: string;
     email: string | null;
     phone: string | null;
+    prakriti: string[] | null;
   };
   items: Array<{
     id: string;
@@ -78,22 +84,31 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       inventoryCount: 0,
       customerCount: 0,
       revenueChangePercent: null,
+      pendingCodRevenue: 0,
     };
   }
 
   const [
     { data: paidOrders },
+    { data: pendingCodOrders },
     { count: orderCount },
     { data: products },
     { count: customerCount },
   ] = await Promise.all([
     supabase.from("orders").select("total_amount, created_at").eq("payment_status", "paid"),
+    supabase
+      .from("orders")
+      .select("total_amount")
+      .eq("payment_method", "cod")
+      .eq("payment_status", "pending"),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("products").select("inventory_count"),
     supabase.from("customers").select("*", { count: "exact", head: true }),
   ]);
 
   const totalRevenue = paidOrders?.reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0;
+  const pendingCodRevenue =
+    pendingCodOrders?.reduce((sum, o) => sum + Number(o.total_amount), 0) ?? 0;
   const inventoryCount = products?.reduce((sum, p) => sum + (p.inventory_count ?? 0), 0) ?? 0;
 
   let revenueChangePercent: number | null = null;
@@ -119,6 +134,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     inventoryCount,
     customerCount: customerCount ?? 0,
     revenueChangePercent,
+    pendingCodRevenue,
   };
 }
 
@@ -134,8 +150,9 @@ export async function getRecentOrders(limit = 20): Promise<RecentOrderRow[]> {
       order_number,
       total_amount,
       order_status,
+      payment_method,
       created_at,
-      customers ( name )
+      customers ( name, prakriti )
     `,
     )
     .order("created_at", { ascending: false })
@@ -147,17 +164,25 @@ export async function getRecentOrders(limit = 20): Promise<RecentOrderRow[]> {
   }
 
   return orders.map((o) => {
-    const customer = unwrapRelation(o.customers as { name: string } | { name: string }[] | null);
+    const customer = unwrapRelation(
+      o.customers as
+        | { name: string; prakriti: string[] | null }
+        | { name: string; prakriti: string[] | null }[]
+        | null,
+    );
     const name = customer?.name;
+    const prakriti = customer?.prakriti ?? null;
     return {
       id: o.id,
       displayId: o.order_number
         ? `#${String(o.order_number).padStart(3, "0")}`
         : `ORD-${o.id.replace(/-/g, "").slice(0, 4).toUpperCase()}`,
       customerName: name ?? "Unknown",
+      prakriti,
       createdAt: o.created_at,
       totalAmount: Number(o.total_amount),
       orderStatus: o.order_status as OrderStatus,
+      paymentMethod: o.payment_method,
     };
   });
 }
@@ -174,12 +199,14 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       order_number,
       order_status,
       payment_status,
+      payment_method,
+      cod_charge,
       total_amount,
       created_at,
       razorpay_order_id,
       razorpay_payment_id,
       shipping_address,
-      customers ( name, email, phone ),
+      customers ( name, email, phone, prakriti ),
       order_items (
         id,
         quantity,
@@ -198,8 +225,13 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
   const customer = unwrapRelation(
     order.customers as
-      | { name: string; email: string | null; phone: string | null }
-      | Array<{ name: string; email: string | null; phone: string | null }>
+      | { name: string; email: string | null; phone: string | null; prakriti: string[] | null }
+      | Array<{
+          name: string;
+          email: string | null;
+          phone: string | null;
+          prakriti: string[] | null;
+        }>
       | null,
   );
 
@@ -228,6 +260,8 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       : `ORD-${order.id.replace(/-/g, "").slice(0, 4).toUpperCase()}`,
     orderStatus: order.order_status as OrderStatus,
     paymentStatus: order.payment_status,
+    paymentMethod: order.payment_method ?? "unknown",
+    codCharge: Number(order.cod_charge || 0),
     totalAmount: Number(order.total_amount),
     createdAt: order.created_at,
     razorpayOrderId: order.razorpay_order_id,
@@ -237,6 +271,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       name: customer?.name ?? "Unknown",
       email: customer?.email ?? null,
       phone: customer?.phone ?? null,
+      prakriti: customer?.prakriti ?? null,
     },
     items: items ?? [],
   };

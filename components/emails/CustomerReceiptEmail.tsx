@@ -5,6 +5,10 @@ interface CustomerReceiptEmailProps {
   customerName: string;
   shippingAddress: string;
   totalAmount: number;
+  subtotal?: number;
+  codCharge?: number;
+  paymentMethod?: "cod" | "razorpay";
+  items?: Array<{ name: string; quantity: number; price: number }>;
 }
 
 export const CustomerReceiptEmail: React.FC<Readonly<CustomerReceiptEmailProps>> = ({
@@ -12,6 +16,10 @@ export const CustomerReceiptEmail: React.FC<Readonly<CustomerReceiptEmailProps>>
   customerName,
   shippingAddress,
   totalAmount,
+  subtotal,
+  codCharge,
+  paymentMethod,
+  items,
 }) => (
   <div
     style={{
@@ -68,8 +76,49 @@ export const CustomerReceiptEmail: React.FC<Readonly<CustomerReceiptEmailProps>>
         <p style={{ margin: "5px 0", fontSize: "14px" }}>
           <strong>Order Number:</strong> #{orderNumber.toString().padStart(3, "0")}
         </p>
+
+        {items && items.length > 0 && (
+          <div
+            style={{
+              margin: "15px 0",
+              padding: "10px 0",
+              borderTop: "1px solid #e7e5e4",
+              borderBottom: "1px solid #e7e5e4",
+            }}
+          >
+            <h4 style={{ margin: "0 0 10px 0", fontSize: "14px" }}>Items</h4>
+            {items.map((item, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginBottom: "5px",
+                  fontSize: "14px",
+                }}
+              >
+                <span>
+                  {item.quantity}x {item.name}
+                </span>
+                <span>₹{item.price * item.quantity}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {paymentMethod === "cod" && subtotal !== undefined && codCharge !== undefined && (
+          <>
+            <p style={{ margin: "5px 0", fontSize: "14px" }}>
+              <strong>Subtotal:</strong> ₹{subtotal}
+            </p>
+            <p style={{ margin: "5px 0", fontSize: "14px" }}>
+              <strong>COD Charge:</strong> ₹{codCharge}
+            </p>
+          </>
+        )}
         <p style={{ margin: "5px 0", fontSize: "14px" }}>
-          <strong>Total Paid:</strong> ₹{totalAmount}
+          <strong>Total {paymentMethod === "cod" ? "Payable on Delivery" : "Paid"}:</strong> ₹
+          {totalAmount}
         </p>
       </div>
 

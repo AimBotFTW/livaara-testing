@@ -3,6 +3,17 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Review } from "@/lib/types/database";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { RateLimiter } from "limiter";
+
+const limiters = new Map<string, RateLimiter>();
+
+function getLimiter(ip: string) {
+  if (!limiters.has(ip)) {
+    limiters.set(ip, new RateLimiter({ tokensPerInterval: 3, interval: "hour" }));
+  }
+  return limiters.get(ip)!;
+}
 
 /**
  * Fetches only approved reviews for the frontend.
@@ -104,6 +115,14 @@ export async function submitReview(data: {
   rating: number;
   review_text: string;
 }): Promise<{ success: boolean; error?: string }> {
+  const headersList = await headers();
+  const ip = headersList.get("x-forwarded-for") ?? "unknown";
+
+  const limiter = getLimiter(ip);
+  if (!limiter.tryRemoveTokens(1)) {
+    return { success: false, error: "Too many submissions. Please try again later." };
+  }
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("reviews").insert({

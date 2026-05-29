@@ -49,6 +49,7 @@ export type Review = {
   id: string;
   product_id: string;
   customer_id: string | null;
+  reviewer_name: string | null;
   rating: number;
   review_text: string;
   is_approved: boolean;

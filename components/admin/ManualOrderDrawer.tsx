@@ -31,6 +31,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
   const [prakriti, setPrakriti] = useState<string[]>([]);
   const [shippingAddress, setShippingAddress] = useState("");
   const [paymentLabel, setPaymentLabel] = useState<"Cash" | "Bank Transfer">("Cash");
+  const [addCodCharge, setAddCodCharge] = useState(false);
   const [productId, setProductId] = useState(defaultProduct?.id ?? "");
   const [quantity, setQuantity] = useState(1);
   const [customProductName, setCustomProductName] = useState("");
@@ -62,7 +63,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
     customItemPrice !== "" && !isNaN(Number(customItemPrice))
       ? Number(customItemPrice)
       : (selectedProduct?.price ?? 0);
-  const lineTotal = parsedPrice * quantity;
+  const lineTotal = parsedPrice * quantity + (addCodCharge ? 40 : 0);
 
   const resetForm = () => {
     setCustomerName("");
@@ -71,6 +72,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
     setPrakriti([]);
     setShippingAddress("");
     setPaymentLabel("Cash");
+    setAddCodCharge(false);
     setQuantity(1);
     setCustomProductName("");
     setCustomItemPrice("");
@@ -101,6 +103,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
           customItemPrice !== "" && !isNaN(Number(customItemPrice))
             ? Number(customItemPrice)
             : undefined,
+        codCharge: addCodCharge ? 40 : 0,
         notes: notes.trim() || undefined,
         orderStatus,
         paymentStatus,
@@ -315,12 +318,33 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
               <select
                 id="payment"
                 value={paymentLabel}
-                onChange={(e) => setPaymentLabel(e.target.value as "Cash" | "Bank Transfer")}
+                onChange={(e) => {
+                  const val = e.target.value as "Cash" | "Bank Transfer";
+                  setPaymentLabel(val);
+                  if (val !== "Cash") setAddCodCharge(false);
+                }}
                 className={inputClass}
               >
                 <option value="Cash">Cash</option>
                 <option value="Bank Transfer">Bank Transfer</option>
               </select>
+              {paymentLabel === "Cash" && (
+                <div className="mt-sm flex items-center gap-sm">
+                  <input
+                    type="checkbox"
+                    id="addCodCharge"
+                    checked={addCodCharge}
+                    onChange={(e) => setAddCodCharge(e.target.checked)}
+                    className="w-4 h-4 accent-[#C8A96A] bg-stone-950 border-stone-800"
+                  />
+                  <label
+                    htmlFor="addCodCharge"
+                    className="font-body-sm text-stone-300 cursor-pointer select-none"
+                  >
+                    Add COD charge (+₹40)
+                  </label>
+                </div>
+              )}
             </div>
             <div>
               <label htmlFor="orderStatus" className={labelClass}>

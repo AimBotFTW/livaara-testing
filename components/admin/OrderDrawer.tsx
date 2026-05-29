@@ -33,10 +33,13 @@ type EditFormState = {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerPrakriti: string[];
   shippingAddress: string;
   notes: string;
   orderStatus: OrderStatus;
   paymentStatus: PaymentStatus;
+  paymentMethod: string;
+  codCharge: string;
   totalAmount: string;
   items: Array<{
     id: string;
@@ -52,12 +55,14 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
   const [pending, startTransition] = useTransition();
 
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState | null>(null);
 
   useEffect(() => {
     if (!orderId) {
       setDetail(null);
       setIsEditing(false);
+      setConfirmDelete(false);
       return;
     }
     setLoading(true);
@@ -85,10 +90,13 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
       customerName: detail.customer.name,
       customerEmail: detail.customer.email || "",
       customerPhone: detail.customer.phone || "",
+      customerPrakriti: detail.customer.prakriti || [],
       shippingAddress: formatShippingAddress(detail.shippingAddress).join(", "),
       notes: (detail.shippingAddress as Record<string, string>)?.notes || "",
       orderStatus: detail.orderStatus,
       paymentStatus: detail.paymentStatus as PaymentStatus,
+      paymentMethod: detail.paymentMethod,
+      codCharge: detail.codCharge.toString(),
       totalAmount: detail.totalAmount.toString(),
       items: detail.items.map((i) => ({
         id: i.id,
@@ -107,11 +115,13 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         orderStatus: editForm.orderStatus,
         paymentStatus: editForm.paymentStatus,
         totalAmount: Number(editForm.totalAmount),
+        codCharge: Number(editForm.codCharge),
         shippingAddress: editForm.shippingAddress,
         notes: editForm.notes,
         customerName: editForm.customerName,
         customerEmail: editForm.customerEmail,
         customerPhone: editForm.customerPhone,
+        customerPrakriti: editForm.customerPrakriti,
         items: editForm.items.map((i) => ({
           id: i.id,
           quantity: i.quantity,
@@ -157,8 +167,6 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
 
   const handleDelete = () => {
     if (!detail) return;
-    if (!window.confirm("Are you sure you want to delete this order? This cannot be undone."))
-      return;
     startTransition(async () => {
       const result = await deleteOrderAction(detail.id);
       if (result.ok) {
@@ -367,14 +375,38 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   Generate Invoice
                 </button>
 
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={handleDelete}
-                  className="mt-lg w-full font-button text-button uppercase px-md py-sm border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40"
-                >
-                  {pending ? "Deleting..." : "Delete Order"}
-                </button>
+                {!confirmDelete ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => setConfirmDelete(true)}
+                    className="mt-lg w-full font-button text-button uppercase px-md py-sm border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40"
+                  >
+                    Delete Order
+                  </button>
+                ) : (
+                  <div className="mt-lg flex items-center justify-between gap-sm">
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={pending}
+                      className="flex-1 font-button text-button uppercase px-sm py-sm border border-red-500 bg-red-500 text-black hover:bg-red-500/90 transition-colors cursor-pointer disabled:opacity-40"
+                    >
+                      {pending ? "..." : "Yes, delete"}
+                    </button>
+                    <span className="text-[10px] text-red-400 text-center leading-tight flex-[0.8]">
+                      This action cannot be undone.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={pending}
+                      className="flex-1 font-button text-button uppercase px-sm py-sm border border-stone-800 text-stone-400 hover:text-stone-200 hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </section>
             </>
           )}
@@ -415,6 +447,33 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                     onChange={(e) => setEditForm({ ...editForm, customerPhone: e.target.value })}
                     className={inputClass}
                   />
+                </div>
+                <div>
+                  <label className={labelClass}>Prakriti (dosha type)</label>
+                  <div className="flex gap-2 mt-xs">
+                    {["Vata", "Pitta", "Kapha"].map((dosha) => {
+                      const isSelected = editForm.customerPrakriti.includes(dosha);
+                      return (
+                        <button
+                          key={dosha}
+                          type="button"
+                          onClick={() => {
+                            const newPrakriti = isSelected
+                              ? editForm.customerPrakriti.filter((d) => d !== dosha)
+                              : [...editForm.customerPrakriti, dosha];
+                            setEditForm({ ...editForm, customerPrakriti: newPrakriti });
+                          }}
+                          className={`flex-1 py-sm font-body-sm text-body-sm transition-colors border ${
+                            isSelected
+                              ? "border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/10"
+                              : "border-stone-800/50 bg-stone-950 text-stone-200 hover:border-stone-700"
+                          }`}
+                        >
+                          {dosha}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </section>
 
@@ -521,6 +580,19 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                   </div>
                 ))}
 
+                {editForm.paymentMethod === "cod" && (
+                  <div>
+                    <label className={labelClass}>COD charge</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editForm.codCharge}
+                      onChange={(e) => setEditForm({ ...editForm, codCharge: e.target.value })}
+                      className={inputClass}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className={labelClass}>Grand Total Amount</label>
                   <input
@@ -531,7 +603,10 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                     className={inputClass}
                   />
                   <p className="text-xs text-stone-500 mt-xs">
-                    Override the total sum. Does not auto-calculate.
+                    Override the total sum. Does not auto-calculate.{" "}
+                    {editForm.paymentMethod === "cod"
+                      ? "Remember to include COD charge in the total if applicable."
+                      : ""}
                   </p>
                 </div>
               </section>

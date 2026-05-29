@@ -29,6 +29,7 @@ export default function CheckoutPage() {
   const router = useRouter();
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
   const [formData, setFormData] = useState({
     email: "",
     firstName: "",
@@ -51,6 +52,34 @@ export default function CheckoutPage() {
     if (validItems.length === 0) return alert("Your cart is empty");
 
     setIsProcessing(true);
+
+    setIsProcessing(true);
+
+    if (paymentMethod === "cod") {
+      try {
+        const res = await fetch("/api/checkout/cod", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cartItems: validItems, formData }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to create order");
+
+        toggleCart(false);
+        if (data.orderNumber) {
+          router.push(`/order-success?id=${data.orderId}&order_number=${data.orderNumber}`);
+        } else {
+          router.push(`/order-success?id=${data.orderId}`);
+        }
+      } catch (err) {
+        console.error("COD Checkout Error:", err);
+        alert("Failed to place order. Please try again.");
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
 
     try {
       // 1. Create Razorpay Order on Backend
@@ -324,21 +353,74 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Razorpay Banner Info */}
-                <div className="mt-8 border border-[#596244]/20 rounded-sm p-6 bg-[#596244]/5 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full border-4 border-[#596244] bg-white flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-[#596244]"></div>
-                    </div>
-                    <span className="font-semibold text-[#1b1c1c] text-sm">
-                      Secure Checkout via Razorpay
-                    </span>
+                {/* Payment Method Selector */}
+                <div className="pt-6 border-t border-[#c8c7be]/20">
+                  <h2 className="font-serif text-2xl text-[#1b1c1c] mb-6">Payment Method</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("razorpay")}
+                      className={`p-4 border rounded-sm text-left transition-colors flex items-center justify-between ${
+                        paymentMethod === "razorpay"
+                          ? "border-[#596244] bg-[#596244]/5"
+                          : "border-[#c8c7be]/50 bg-transparent hover:border-[#596244]/50"
+                      }`}
+                    >
+                      <span className="font-sans text-sm font-medium text-[#1b1c1c]">
+                        Online Payment (Razorpay)
+                      </span>
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          paymentMethod === "razorpay" ? "border-[#596244]" : "border-[#c8c7be]"
+                        }`}
+                      >
+                        {paymentMethod === "razorpay" && (
+                          <div className="w-2 h-2 rounded-full bg-[#596244]" />
+                        )}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("cod")}
+                      className={`p-4 border rounded-sm text-left transition-colors flex items-center justify-between ${
+                        paymentMethod === "cod"
+                          ? "border-[#596244] bg-[#596244]/5"
+                          : "border-[#c8c7be]/50 bg-transparent hover:border-[#596244]/50"
+                      }`}
+                    >
+                      <span className="font-sans text-sm font-medium text-[#1b1c1c]">
+                        Cash on Delivery (+₹40)
+                      </span>
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          paymentMethod === "cod" ? "border-[#596244]" : "border-[#c8c7be]"
+                        }`}
+                      >
+                        {paymentMethod === "cod" && (
+                          <div className="w-2 h-2 rounded-full bg-[#596244]" />
+                        )}
+                      </div>
+                    </button>
                   </div>
-                  <p className="text-xs text-stone-500 pl-8 leading-relaxed">
-                    Razorpay supports credit cards, UPI (GPay, PhonePe, Paytm), net banking, and
-                    digital wallets. Your financial details are safe and fully encrypted.
-                  </p>
                 </div>
+
+                {/* Razorpay Banner Info */}
+                {paymentMethod === "razorpay" && (
+                  <div className="mt-8 border border-[#596244]/20 rounded-sm p-6 bg-[#596244]/5 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full border-4 border-[#596244] bg-white flex items-center justify-center">
+                        <div className="w-2 h-2 rounded-full bg-[#596244]"></div>
+                      </div>
+                      <span className="font-semibold text-[#1b1c1c] text-sm">
+                        Secure Checkout via Razorpay
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 pl-8 leading-relaxed">
+                      Razorpay supports credit cards, UPI (GPay, PhonePe, Paytm), net banking, and
+                      digital wallets. Your financial details are safe and fully encrypted.
+                    </p>
+                  </div>
+                )}
 
                 <div className="pt-6 flex flex-col-reverse md:flex-row items-center justify-between gap-6">
                   <Link
@@ -355,7 +437,11 @@ export default function CheckoutPage() {
                     disabled={isProcessing}
                     className="w-full md:w-auto bg-[#596244] text-white px-10 py-5 rounded-lg font-sans text-sm font-semibold tracking-wider hover:bg-[#596244]/90 transition-all shadow-md active:scale-95 disabled:opacity-50 uppercase"
                   >
-                    {isProcessing ? "PROCESSING..." : `PAY NOW (${formatCurrency(cartTotal)})`}
+                    {isProcessing
+                      ? "PROCESSING..."
+                      : paymentMethod === "cod"
+                        ? `PLACE ORDER — ${formatCurrency(cartTotal + 40)}`
+                        : `PAY NOW (${formatCurrency(cartTotal)})`}
                   </button>
                 </div>
               </section>
@@ -476,6 +562,12 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span className="font-semibold text-[#1b1c1c]">{formatCurrency(cartTotal)}</span>
                 </div>
+                {paymentMethod === "cod" && (
+                  <div className="flex justify-between font-sans text-sm text-[#474741]">
+                    <span>COD Charges</span>
+                    <span className="font-semibold text-[#1b1c1c]">{formatCurrency(40)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-sans text-sm text-[#474741]">
                   <span>Shipping</span>
                   <span className="font-semibold text-[#596244]">Free</span>
@@ -490,7 +582,7 @@ export default function CheckoutPage() {
                   <div className="text-right">
                     <span className="text-xs text-[#474741] mr-2">INR</span>
                     <span className="font-serif text-2xl font-semibold text-[#1b1c1c]">
-                      {formatCurrency(cartTotal)}
+                      {formatCurrency(paymentMethod === "cod" ? cartTotal + 40 : cartTotal)}
                     </span>
                   </div>
                 </div>

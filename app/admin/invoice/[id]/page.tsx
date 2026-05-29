@@ -54,6 +54,11 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <p className="text-sm text-stone-600">
               <span className="font-medium">Status:</span>{" "}
               <span className="uppercase">{order.paymentStatus}</span>
+              {order.paymentMethod === "cod" && (
+                <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-stone-200 text-stone-800 tracking-wider">
+                  CASH ON DELIVERY
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -137,18 +142,35 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
         {/* Totals */}
         <div className="flex justify-end mb-16">
           <div className="w-64">
-            <div className="flex justify-between py-2 border-b border-stone-100">
-              <span className="text-sm text-stone-600">Subtotal</span>
-              <span className="text-sm font-medium">{formatAdminCurrency(subtotal)}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-stone-100">
-              <span className="text-sm text-stone-600">Tax (0%)</span>
-              <span className="text-sm font-medium">{formatAdminCurrency(0)}</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-stone-200">
-              <span className="text-sm text-stone-600">Shipping</span>
-              <span className="text-sm font-medium">Free</span>
-            </div>
+            {order.codCharge > 0 ? (
+              <>
+                <div className="flex justify-between py-2 border-b border-stone-100">
+                  <span className="text-sm text-stone-600">Subtotal</span>
+                  <span className="text-sm font-medium">{formatAdminCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-stone-200">
+                  <span className="text-sm text-stone-600">COD Charge</span>
+                  <span className="text-sm font-medium">
+                    {formatAdminCurrency(order.codCharge)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between py-2 border-b border-stone-100">
+                  <span className="text-sm text-stone-600">Subtotal</span>
+                  <span className="text-sm font-medium">{formatAdminCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-stone-100">
+                  <span className="text-sm text-stone-600">Tax (0%)</span>
+                  <span className="text-sm font-medium">{formatAdminCurrency(0)}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-stone-200">
+                  <span className="text-sm text-stone-600">Shipping</span>
+                  <span className="text-sm font-medium">Free</span>
+                </div>
+              </>
+            )}
             <div className="flex justify-between py-4">
               <span className="font-serif text-lg font-medium text-stone-900">Total</span>
               <span className="font-serif text-lg font-medium text-stone-900">

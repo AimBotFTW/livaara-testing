@@ -12,24 +12,100 @@ type RecentOrdersTableProps = {
 
 function StatusBadge({ status }: { status: RecentOrderRow["orderStatus"] }) {
   const s = status.toLowerCase();
-  if (s === "delivered" || s === "shipped") {
+  if (s === "processing") {
     return (
-      <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0px_0px_10px_rgba(34,197,94,0.1)]">
+      <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shadow-[0px_0px_10px_rgba(201,163,91,0.1)] glow-gold">
         {orderStatusLabel(status)}
       </span>
     );
   }
+
+  if (s === "shipped") {
+    return (
+      <span
+        className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider"
+        style={{
+          background: "rgba(59,130,246,0.15)",
+          color: "#93c5fd",
+          border: "1px solid rgba(59,130,246,0.3)",
+        }}
+      >
+        {orderStatusLabel(status)}
+      </span>
+    );
+  }
+
+  if (s === "delivered") {
+    return (
+      <span
+        className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider"
+        style={{
+          background: "rgba(34,197,94,0.15)",
+          color: "#86efac",
+          border: "1px solid rgba(34,197,94,0.3)",
+        }}
+      >
+        {orderStatusLabel(status)}
+      </span>
+    );
+  }
+
   if (s === "cancelled") {
     return (
-      <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0px_0px_10px_rgba(239,68,68,0.1)]">
+      <span
+        className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider"
+        style={{
+          background: "rgba(239,68,68,0.15)",
+          color: "#fca5a5",
+          border: "1px solid rgba(239,68,68,0.3)",
+        }}
+      >
         {orderStatusLabel(status)}
       </span>
     );
   }
-  // pending or processing
+
+  // pending
   return (
-    <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shadow-[0px_0px_10px_rgba(201,163,91,0.1)] glow-gold">
+    <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-surface-container-high text-on-surface-variant border border-white/10">
       {orderStatusLabel(status)}
+    </span>
+  );
+}
+
+function DoshaPill({ dosha }: { dosha: string }) {
+  const d = dosha.toLowerCase();
+  let bg = "";
+  let color = "";
+  let border = "";
+  if (d === "vata") {
+    bg = "rgba(147,112,219,0.15)";
+    color = "#c4b0ff";
+    border = "1px solid rgba(147,112,219,0.3)";
+  } else if (d === "pitta") {
+    bg = "rgba(239,68,68,0.15)";
+    color = "#fca5a5";
+    border = "1px solid rgba(239,68,68,0.3)";
+  } else if (d === "kapha") {
+    bg = "rgba(34,197,94,0.15)";
+    color = "#86efac";
+    border = "1px solid rgba(34,197,94,0.3)";
+  } else {
+    return null;
+  }
+  return (
+    <span
+      style={{
+        background: bg,
+        color,
+        border,
+        fontSize: "10px",
+        padding: "2px 6px",
+        borderRadius: "4px",
+        marginRight: "4px",
+      }}
+    >
+      {dosha}
     </span>
   );
 }
@@ -102,14 +178,36 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
                   <h4 className="font-title-md text-[14px] font-semibold text-on-surface">
                     {order.customerName}
                   </h4>
+                  {order.prakriti && order.prakriti.length > 0 && (
+                    <div className="flex mt-1 mb-1">
+                      {order.prakriti.map((d) => (
+                        <DoshaPill key={d} dosha={d} />
+                      ))}
+                    </div>
+                  )}
                   <p className="text-[12px] text-on-surface-variant">
                     {order.displayId} • {formatAdminDate(order.createdAt).split(",")[0]}
                   </p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <span className="text-[12px] font-bold text-on-surface">
+                <span className="text-[12px] font-bold text-on-surface flex items-center">
                   {formatAdminCurrency(order.totalAmount)}
+                  {order.paymentMethod === "cod" && (
+                    <span
+                      style={{
+                        background: "rgba(200,169,106,0.15)",
+                        color: "#C8A96A",
+                        border: "1px solid rgba(200,169,106,0.3)",
+                        fontSize: "10px",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        marginLeft: "6px",
+                      }}
+                    >
+                      COD
+                    </span>
+                  )}
                 </span>
                 <StatusBadge status={order.orderStatus} />
               </div>
@@ -237,16 +335,42 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
                           >
                             {getInitials(order.customerName)}
                           </div>
-                          <span className="text-on-surface font-semibold text-[14px]">
-                            {order.customerName}
-                          </span>
+                          <div>
+                            <span className="text-on-surface font-semibold text-[14px] block leading-tight">
+                              {order.customerName}
+                            </span>
+                            {order.prakriti && order.prakriti.length > 0 && (
+                              <div className="flex mt-1">
+                                {order.prakriti.map((d) => (
+                                  <DoshaPill key={d} dosha={d} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="px-8 py-5 text-on-surface-variant text-[14px]">
                         {formatAdminDate(order.createdAt).split(",")[0]}
                       </td>
                       <td className="px-8 py-5 text-on-surface font-bold text-[14px]">
-                        {formatAdminCurrency(order.totalAmount)}
+                        <div className="flex items-center">
+                          {formatAdminCurrency(order.totalAmount)}
+                          {order.paymentMethod === "cod" && (
+                            <span
+                              style={{
+                                background: "rgba(200,169,106,0.15)",
+                                color: "#C8A96A",
+                                border: "1px solid rgba(200,169,106,0.3)",
+                                fontSize: "10px",
+                                padding: "2px 6px",
+                                borderRadius: "4px",
+                                marginLeft: "6px",
+                              }}
+                            >
+                              COD
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-8 py-5">
                         <StatusBadge status={order.orderStatus} />

@@ -1,3 +1,5 @@
+import React from "react";
+import { render } from "@react-email/render";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -162,12 +164,14 @@ export async function POST(req: Request) {
             from: `LIVAARA <${process.env.RESEND_FROM_EMAIL}>`,
             to: customer.email,
             subject: `Your LIVAARA Order #${(order.order_number ?? 0).toString().padStart(3, "0")} Confirmation`,
-            react: CustomerReceiptEmail({
-              orderNumber: order.order_number ?? 0,
-              customerName: sa.firstName,
-              shippingAddress: addressString,
-              totalAmount: order.total_amount,
-            }) as React.ReactElement,
+            html: await render(
+              React.createElement(CustomerReceiptEmail, {
+                orderNumber: order.order_number ?? 0,
+                customerName: sa.firstName,
+                shippingAddress: addressString,
+                totalAmount: order.total_amount,
+              }),
+            ),
           });
         } catch (error) {
           console.error("[Resend customer email error]", error);
@@ -180,12 +184,14 @@ export async function POST(req: Request) {
               from: `LIVAARA System <${process.env.RESEND_FROM_EMAIL}>`,
               to: process.env.ADMIN_EMAIL,
               subject: `New Order Received! #${(order.order_number ?? 0).toString().padStart(3, "0")}`,
-              react: AdminNotificationEmail({
-                orderNumber: order.order_number ?? 0,
-                customerName: customer.name || sa.firstName,
-                customerEmail: customer.email,
-                totalAmount: order.total_amount,
-              }) as React.ReactElement,
+              html: await render(
+                React.createElement(AdminNotificationEmail, {
+                  orderNumber: order.order_number ?? 0,
+                  customerName: customer.name || sa.firstName,
+                  customerEmail: customer.email,
+                  totalAmount: order.total_amount,
+                }),
+              ),
             });
           } catch (error) {
             console.error("[Resend admin email error]", error);

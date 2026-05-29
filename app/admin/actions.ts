@@ -154,6 +154,7 @@ export type ManualOrderInput = {
   productId: string;
   quantity: number;
   customItemPrice?: number;
+  codCharge?: number;
   customProductName?: string;
   notes?: string;
   orderStatus?: OrderStatus;
@@ -199,7 +200,8 @@ export async function createManualOrderAction(input: ManualOrderInput) {
 
     const price =
       input.customItemPrice !== undefined ? Number(input.customItemPrice) : Number(product.price);
-    const totalAmount = price * input.quantity;
+    const codCharge = input.codCharge || 0;
+    const totalAmount = price * input.quantity + codCharge;
 
     const email = input.email.trim();
 
@@ -246,6 +248,7 @@ export async function createManualOrderAction(input: ManualOrderInput) {
         payment_method: "offline",
         payment_status: input.paymentStatus || "paid",
         order_status: input.orderStatus || "processing",
+        cod_charge: codCharge,
         razorpay_order_id: null,
         razorpay_payment_id: null,
       })
@@ -340,6 +343,8 @@ export type UpdateOrderInput = {
   customerName?: string;
   customerEmail?: string;
   customerPhone?: string;
+  customerPrakriti?: string[];
+  codCharge?: number;
   items: Array<{
     id: string;
     quantity: number;
@@ -375,6 +380,7 @@ export async function updateOrderAction(input: UpdateOrderInput) {
         order_status: input.orderStatus,
         payment_status: input.paymentStatus,
         total_amount: input.totalAmount,
+        cod_charge: input.codCharge,
         shipping_address: newAddress,
       })
       .eq("id", input.orderId);
@@ -392,6 +398,7 @@ export async function updateOrderAction(input: UpdateOrderInput) {
           ...(input.customerName ? { name: input.customerName } : {}),
           ...(input.customerEmail !== undefined ? { email: input.customerEmail || null } : {}),
           ...(input.customerPhone !== undefined ? { phone: input.customerPhone || null } : {}),
+          ...(input.customerPrakriti !== undefined ? { prakriti: input.customerPrakriti } : {}),
         })
         .eq("id", order.customer_id);
     }

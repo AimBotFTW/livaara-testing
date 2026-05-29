@@ -51,7 +51,7 @@ function VideoCard({ src, product }: { src: string; product: Product }) {
         playsInline
         className="object-cover w-full h-full"
       />
-      
+
       {/* Mute Toggle */}
       <button
         onClick={toggleMute}
@@ -64,10 +64,19 @@ function VideoCard({ src, product }: { src: string; product: Product }) {
       {/* Shoppable Product Card Overlay */}
       <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl p-3 flex items-center gap-3 shadow-lg z-10">
         <div className="w-12 h-12 shrink-0 bg-[#E8D4B0]/40 rounded-lg overflow-hidden relative flex items-center justify-center">
-          <Image src="/images/hero.jpg" alt="Product thumbnail" fill className="object-cover" sizes="48px" />
+          <Image
+            src="/images/hero.jpg"
+            alt="Product thumbnail"
+            fill
+            className="object-cover"
+            sizes="48px"
+          />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-stone-900 font-serif text-xs font-medium truncate" title={product.name}>
+          <p
+            className="text-stone-900 font-serif text-xs font-medium truncate"
+            title={product.name}
+          >
             {product.name}
           </p>
           <p className="text-stone-500 text-[11px] mt-0.5">₹{product.price}</p>
@@ -119,7 +128,7 @@ export function ShoppableVideoCarousel({ product }: { product: Product }) {
         >
           <ChevronLeft size={24} />
         </button>
-        
+
         <button
           onClick={scrollRight}
           className="hidden md:flex absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 items-center justify-center rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md transition-all z-20 shadow-lg opacity-0 group-hover/carousel:opacity-100"

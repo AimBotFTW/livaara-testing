@@ -1,6 +1,10 @@
+import React from "react";
+import { render } from "@react-email/render";
 import { NextResponse } from "next/server";
-import Razorpay from "razorpay";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { Resend } from "resend";
+import { CustomerReceiptEmail } from "@/components/emails/CustomerReceiptEmail";
+import { AdminNotificationEmail } from "@/components/emails/AdminNotificationEmail";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
 
@@ -34,18 +38,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing customer information" }, { status: 400 });
     }
 
-    const key_id = process.env.RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-    if (!key_id || !key_secret) {
-      console.error("Missing Razorpay Keys in environment variables");
-      return NextResponse.json({ error: "Payment gateway not configured" }, { status: 500 });
-    }
-
     const supabase = createAdminClient();
-
-    let totalAmount = 0;
+    let subtotal = 0;
     const orderItemsToInsert = [];
+    const itemsForEmail = [];
 
     // Validate products and calculate total securely
     for (const item of cartItems) {
@@ -55,7 +51,7 @@ export async function POST(req: Request) {
 
       const { data: product, error: productError } = await supabase
         .from("products")
-        .select("id, price, inventory_count, is_active")
+        .select("id, price, inventory_count, is_active, name")
         .eq("id", item.id)
         .single();
 
@@ -72,18 +68,27 @@ export async function POST(req: Request) {
       }
 
       const itemTotal = product.price * item.quantity;
-      totalAmount += itemTotal;
+      subtotal += itemTotal;
 
       orderItemsToInsert.push({
         product_id: product.id,
         quantity: item.quantity,
         price_at_purchase: product.price,
       });
+
+      itemsForEmail.push({
+        name: product.name,
+        quantity: item.quantity,
+        price: product.price,
+      });
     }
 
-    if (totalAmount <= 0) {
+    if (subtotal <= 0) {
       return NextResponse.json({ error: "Invalid order total" }, { status: 400 });
     }
+
+    const codCharge = 40;
+    const totalAmount = subtotal + codCharge;
 
     // Upsert Customer
     const fullName = `${formData.firstName} ${formData.lastName || ""}`.trim();
@@ -119,18 +124,6 @@ export async function POST(req: Request) {
       customerId = newCustomer.id;
     }
 
-    // Create Razorpay Order
-    const razorpay = new Razorpay({ key_id, key_secret });
-    const amountInPaise = Math.round(totalAmount * 100);
-
-    const rzpOptions = {
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-    };
-
-    const razorpayOrder = await razorpay.orders.create(rzpOptions);
-
     // Create pending order in Supabase
     const shippingAddress = {
       firstName: formData.firstName,
@@ -147,20 +140,21 @@ export async function POST(req: Request) {
       .insert({
         customer_id: customerId,
         total_amount: totalAmount,
+        payment_method: "cod",
         payment_status: "pending",
-        order_status: "pending",
+        order_status: "processing",
+        cod_charge: codCharge,
         shipping_address: shippingAddress,
-        razorpay_order_id: razorpayOrder.id,
       })
       .select("id, order_number")
       .single();
 
     if (orderError) {
       console.error("Order creation failed:", orderError);
-      return NextResponse.json({ error: "Failed to create pending order" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
     }
 
-    // Insert pending order items
+    // Insert order items
     const orderItemsWithOrderId = orderItemsToInsert.map((item) => ({
       ...item,
       order_id: newOrder.id,
@@ -170,18 +164,76 @@ export async function POST(req: Request) {
 
     if (itemsError) {
       console.error("Failed to insert order items:", itemsError);
-      return NextResponse.json({ error: "Failed to create order items" }, { status: 500 });
+    }
+
+    // Decrement inventory securely via RPC
+    for (const item of orderItemsToInsert) {
+      const { error: rpcError } = await supabase.rpc("decrement_product_inventory", {
+        p_product_id: item.product_id,
+        p_qty: item.quantity,
+      });
+      if (rpcError) {
+        console.error("Failed to decrement inventory:", rpcError);
+      }
+    }
+
+    // Send Transactional Emails
+    const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+    const addressString = `${shippingAddress.firstName} ${shippingAddress.lastName}\n${shippingAddress.address} ${shippingAddress.apartment ? shippingAddress.apartment + " " : ""}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}`;
+
+    try {
+      await resend.emails.send({
+        from: `LIVAARA <${process.env.RESEND_FROM_EMAIL}>`,
+        to: formData.email,
+        subject: `Order Confirmed — Lomaras™ Ayurvedic Scalp Oil`,
+        html: await render(
+          React.createElement(CustomerReceiptEmail, {
+            orderNumber: newOrder.order_number,
+            customerName: shippingAddress.firstName,
+            shippingAddress: addressString,
+            totalAmount: totalAmount,
+            subtotal: subtotal,
+            codCharge: codCharge,
+            items: itemsForEmail,
+            paymentMethod: "cod",
+          }),
+        ),
+      });
+    } catch (error) {
+      console.error("[Resend customer email error]", error);
+    }
+
+    if (process.env.ADMIN_EMAIL) {
+      try {
+        await resend.emails.send({
+          from: `LIVAARA System <${process.env.RESEND_FROM_EMAIL}>`,
+          to: process.env.ADMIN_EMAIL,
+          subject: `New COD Order #${String(newOrder.order_number).padStart(3, "0")} — Lomaras™`,
+          html: await render(
+            React.createElement(AdminNotificationEmail, {
+              orderNumber: newOrder.order_number,
+              customerName: fullName,
+              customerEmail: formData.email,
+              totalAmount: totalAmount,
+              subtotal: subtotal,
+              codCharge: codCharge,
+              items: itemsForEmail,
+              paymentMethod: "cod",
+            }),
+          ),
+        });
+      } catch (error) {
+        console.error("[Resend admin email error]", error);
+      }
     }
 
     return NextResponse.json({
-      id: razorpayOrder.id,
-      currency: razorpayOrder.currency,
-      amount: razorpayOrder.amount,
-      internalOrderId: newOrder.id,
-      internalOrderNumber: newOrder.order_number,
+      success: true,
+      orderId: newOrder.id,
+      orderNumber: newOrder.order_number,
     });
   } catch (error) {
-    console.error("Razorpay Order Creation Error:", error);
-    return NextResponse.json({ error: "Failed to create payment order" }, { status: 500 });
+    console.error("COD Order Creation Error:", error);
+    return NextResponse.json({ error: "Failed to process COD order" }, { status: 500 });
   }
 }

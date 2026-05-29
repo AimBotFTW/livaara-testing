@@ -58,7 +58,7 @@ export function Product({ product }: ProductSectionProps) {
                       price: product.price,
                       quantity: 1,
                     },
-                    false
+                    false,
                   );
                   router.push("/checkout");
                 }}
