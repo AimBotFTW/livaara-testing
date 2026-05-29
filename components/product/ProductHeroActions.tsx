@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/context/CartContext";
 import { Minus, Plus, ShoppingBag, MessageCircle, Zap } from "lucide-react";
@@ -42,6 +42,24 @@ export function ProductHeroActions({
     router.push("/checkout");
   };
 
+  // ── Scroll visibility for mobile sticky CTA ──
+  const [showSticky, setShowSticky] = useState(false);
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show sticky CTA after scrolling past the main hero actions
+      const heroBtn = document.getElementById("add-to-cart-btn");
+      if (heroBtn) {
+        const rect = heroBtn.getBoundingClientRect();
+        // If the button is above the viewport (scrolled past it)
+        setShowSticky(rect.top < 0);
+      } else {
+        setShowSticky(window.scrollY > 400);
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <>
       {/* ── Quantity + Add-to-Cart ── */}
@@ -75,8 +93,18 @@ export function ProductHeroActions({
       </div>
 
       {/* ── Secondary CTA row: Dosha Consult + Buy Now ── */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-10">
-        {/* WhatsApp Dosha Consult */}
+      <div className="flex flex-col sm:flex-row gap-4 w-full mb-10">
+        {/* Primary: Buy Now */}
+        <button
+          id="buy-now-btn"
+          onClick={handleBuyNow}
+          disabled={buying}
+          className="flex-1 flex items-center justify-center gap-2 bg-stone-900 text-white font-semibold tracking-widest uppercase text-sm rounded-md py-3.5 hover:bg-stone-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          <Zap size={16} className={buying ? "animate-pulse" : ""} />
+          {buying ? "Redirecting…" : `Buy Now — ₹${price}`}
+        </button>
+        {/* Secondary: WhatsApp Dosha Consult */}
         <a
           id="dosha-consult-btn"
           href={WA_URL}
@@ -87,24 +115,23 @@ export function ProductHeroActions({
           <MessageCircle size={16} />
           Free Dosha Consult
         </a>
-
-        {/* High-contrast Buy Now */}
-        <button
-          id="buy-now-btn"
-          onClick={handleBuyNow}
-          disabled={buying}
-          className="flex-1 flex items-center justify-center gap-2 bg-[#C8A96A] text-white font-semibold tracking-widest uppercase text-sm rounded-md py-3.5 hover:bg-[#b8954f] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#C8A96A]/30 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          <Zap size={16} className={buying ? "animate-pulse" : ""} />
-          {buying ? "Redirecting…" : `Buy Now — ₹${price}`}
-        </button>
       </div>
 
       {/* ── Mobile Sticky CTA Bar (md:hidden) ── */}
       <div
         id="mobile-sticky-cta"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 py-3 flex gap-3 shadow-2xl"
+        className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 py-3 flex gap-3 shadow-sm transition-transform duration-300 ${
+          showSticky ? "translate-y-0" : "translate-y-full"
+        }`}
       >
+        <button
+          onClick={handleBuyNow}
+          disabled={buying}
+          className="flex-[2] flex items-center justify-center gap-1.5 bg-stone-900 text-white font-semibold text-sm tracking-widest uppercase rounded-md py-3.5 hover:bg-stone-800 transition-colors disabled:opacity-70"
+        >
+          <Zap size={14} className={buying ? "animate-pulse" : ""} />
+          {buying ? "Going…" : `Buy Now — ₹${price}`}
+        </button>
         <a
           href={WA_URL}
           target="_blank"
@@ -114,14 +141,6 @@ export function ProductHeroActions({
           <MessageCircle size={14} />
           Free Consult
         </a>
-        <button
-          onClick={handleBuyNow}
-          disabled={buying}
-          className="flex-[2] flex items-center justify-center gap-1.5 bg-[#C8A96A] text-white font-semibold text-sm tracking-widest uppercase rounded-md py-3.5 hover:bg-[#b8954f] active:scale-[0.98] transition-all duration-200 shadow-lg shadow-[#C8A96A]/25 disabled:opacity-70"
-        >
-          <Zap size={14} className={buying ? "animate-pulse" : ""} />
-          {buying ? "Going…" : `Buy Now — ₹${price}`}
-        </button>
       </div>
     </>
   );

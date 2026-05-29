@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  async redirects() {
+    return [
+      {
+        source: "/product",
+        destination: "/product/lomaras-ayurvedic-scalp-oil",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

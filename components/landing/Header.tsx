@@ -1,20 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { NAV } from "./nav";
 import { formatInr } from "@/lib/utils";
 import { useCart } from "@/lib/context/CartContext";
-import { trackShopNowClick } from "@/lib/analytics";
+import { trackHeroCTA, trackShopNowClick, trackSectionViewed } from "@/lib/analytics";
 
 type HeaderProps = {
   shopPrice?: number;
 };
 
 export function Header({ shopPrice = 599 }: HeaderProps) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [open, setOpen] = useState(false);
-  const { toggleCart, addToCart } = useCart();
+  const { toggleCart, addToCart, heroProduct } = useCart();
+  const lastTrackedSection = useRef<string>("");
 
   useEffect(() => {
     const onScroll = () => {
@@ -31,6 +35,12 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!active || lastTrackedSection.current === active) return;
+    lastTrackedSection.current = active;
+    trackSectionViewed(active);
+  }, [active]);
+
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
@@ -38,38 +48,36 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
       }`}
     >
       <div className="container-px mx-auto max-w-7xl flex items-center justify-between h-16 md:h-20">
-        <a href="#top" className="font-serif text-xl md:text-2xl tracking-[0.2em] text-primary">
+        <Link href="/" className="font-serif text-xl md:text-2xl tracking-[0.2em] text-primary">
           LIVAARA
-        </a>
+        </Link>
         <nav className="hidden md:flex items-center gap-9">
-          {NAV.map((n) => (
-            <a
-              key={n.id}
-              href={`#${n.id}`}
-              className={`text-xs uppercase tracking-[0.18em] transition-colors ${
-                active === n.id ? "text-accent" : "text-primary/70 hover:text-primary"
-              }`}
-            >
-              {n.label}
-            </a>
-          ))}
+          {NAV.map((n) => {
+            const href = pathname === "/" && n.href.startsWith("/#") ? n.href.substring(1) : n.href;
+            return (
+              <Link
+                key={n.id}
+                href={href}
+                className={`text-xs uppercase tracking-[0.18em] transition-colors ${
+                  active === n.id ? "text-accent" : "text-primary/70 hover:text-primary"
+                }`}
+              >
+                {n.label}
+              </Link>
+            );
+          })}
         </nav>
         <div className="flex items-center gap-3">
-          <button
+          <Link
+            href="/shop"
             onClick={() => {
+              trackHeroCTA();
               trackShopNowClick();
-              addToCart({
-                id: "a0000000-0000-4000-8000-000000000001",
-                name: "Lomaras™ Ayurvedic Scalp Oil",
-                price: shopPrice,
-                quantity: 1,
-              });
-              toggleCart(true);
             }}
             className="hidden sm:inline-flex items-center justify-center px-5 py-2.5 text-xs uppercase tracking-[0.18em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm"
           >
             Shop Now
-          </button>
+          </Link>
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden text-primary p-2"
@@ -91,32 +99,31 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
       {open && (
         <div className="md:hidden border-t border-border bg-background">
           <nav className="container-px mx-auto py-4 flex flex-col gap-4">
-            {NAV.map((n) => (
-              <a
-                key={n.id}
-                href={`#${n.id}`}
-                onClick={() => setOpen(false)}
-                className="text-sm uppercase tracking-[0.18em] text-primary/80"
-              >
-                {n.label}
-              </a>
-            ))}
-            <button
+            {NAV.map((n) => {
+              const href =
+                pathname === "/" && n.href.startsWith("/#") ? n.href.substring(1) : n.href;
+              return (
+                <Link
+                  key={n.id}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="text-sm uppercase tracking-[0.18em] text-primary/80"
+                >
+                  {n.label}
+                </Link>
+              );
+            })}
+            <Link
+              href="/shop"
               onClick={() => {
+                trackHeroCTA();
                 trackShopNowClick();
                 setOpen(false);
-                addToCart({
-                  id: "a0000000-0000-4000-8000-000000000001",
-                  name: "Lomaras™ Ayurvedic Scalp Oil",
-                  price: shopPrice,
-                  quantity: 1,
-                });
-                toggleCart(true);
               }}
               className="mt-2 inline-flex items-center justify-center px-5 py-3 text-xs uppercase tracking-[0.18em] bg-primary text-primary-foreground rounded-sm"
             >
               Shop Now — {formatInr(shopPrice)}
-            </button>
+            </Link>
           </nav>
         </div>
       )}

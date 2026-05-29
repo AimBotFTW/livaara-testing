@@ -14,8 +14,23 @@ export function Footer() {
           </p>
         </div>
         {[
-          { title: "Explore", links: ["The Process", "Botanicals", "Products", "Your Ritual"] },
-          { title: "Products", links: ["LOMARAS™ Oil", "Root Revive Shampoo", "All Products"] },
+          {
+            title: "Explore",
+            links: [
+              { name: "The Process", href: "/#process" },
+              { name: "Botanicals", href: "/#ingredients" },
+              { name: "Products", href: "/shop" },
+              { name: "Your Ritual", href: "/#ritual" },
+            ],
+          },
+          {
+            title: "Products",
+            links: [
+              { name: "LOMARAS™ Oil", href: "/product/lomaras-ayurvedic-scalp-oil" },
+              { name: "Root Revive Shampoo", href: "/shop" },
+              { name: "All Products", href: "/shop" },
+            ],
+          },
           {
             title: "Connect",
             links: [
@@ -24,7 +39,7 @@ export function Footer() {
                 href="https://www.instagram.com/livaara__?igsh=MWt1YXljMTh1aDlkdg=="
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
+                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors block"
               >
                 Instagram
               </a>,
@@ -34,32 +49,35 @@ export function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => trackWhatsappClicked()}
-                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
+                className="text-sm text-primary-foreground/80 hover:text-accent transition-colors block"
               >
                 WhatsApp Consult
               </a>,
-              "Contact",
-              "Privacy Policy",
+              { name: "Contact", href: "/" },
+              { name: "Privacy Policy", href: "/" },
             ],
           },
         ].map((c) => (
           <div key={c.title}>
             <p className="eyebrow mb-5">{c.title}</p>
             <ul className="space-y-3">
-              {c.links.map((l, idx) => (
-                <li key={typeof l === "string" ? l : `link-${idx}`}>
-                  {typeof l === "string" ? (
-                    <a
-                      href="#"
-                      className="text-sm text-primary-foreground/80 hover:text-accent transition-colors"
-                    >
-                      {l}
-                    </a>
-                  ) : (
-                    l
-                  )}
-                </li>
-              ))}
+              {c.links.map((l, idx) => {
+                const isObj = typeof l === "object" && l !== null && "name" in l;
+                return (
+                  <li key={isObj ? l.name : `link-${idx}`}>
+                    {isObj ? (
+                      <a
+                        href={l.href}
+                        className="text-sm text-primary-foreground/80 hover:text-accent transition-colors block"
+                      >
+                        {l.name}
+                      </a>
+                    ) : (
+                      l
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

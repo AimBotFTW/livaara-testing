@@ -72,10 +72,21 @@ function unwrapRelation<T>(rel: T | T[] | null | undefined): T | null {
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = getClient();
   if (!supabase) {
-    return { totalRevenue: 0, totalOrders: 0, inventoryCount: 0, customerCount: 0, revenueChangePercent: null };
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      inventoryCount: 0,
+      customerCount: 0,
+      revenueChangePercent: null,
+    };
   }
 
-  const [{ data: paidOrders }, { count: orderCount }, { data: products }, { count: customerCount }] = await Promise.all([
+  const [
+    { data: paidOrders },
+    { count: orderCount },
+    { data: products },
+    { count: customerCount },
+  ] = await Promise.all([
     supabase.from("orders").select("total_amount, created_at").eq("payment_status", "paid"),
     supabase.from("orders").select("*", { count: "exact", head: true }),
     supabase.from("products").select("inventory_count"),

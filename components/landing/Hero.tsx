@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LandingImage } from "./LandingImage";
 
 export function Hero() {
@@ -15,17 +16,19 @@ export function Hero() {
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4 fade-up fade-up-2">
             <a
-              href="#product"
+              href="https://wa.me/918511414551?text=Hi%20I%20want%20a%20Dosha%20consultation"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-7 py-3.5 text-xs uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm hover-scale"
             >
               Consult Now
             </a>
-            <a
-              href="#process"
-              className="inline-flex items-center gap-2 px-2 py-3.5 text-xs uppercase tracking-[0.2em] text-primary border-b border-accent hover:text-accent transition-colors hover-scale"
+            <Link
+              href="/product/lomaras-ayurvedic-scalp-oil"
+              className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground uppercase tracking-[0.2em] text-xs transition-colors hover:bg-primary/90"
             >
-              Learn More →
-            </a>
+              Shop the ritual
+            </Link>
           </div>
           <div className="mt-12 flex items-center gap-8 text-xs uppercase tracking-[0.18em] text-muted-foreground fade-up fade-up-3">
             <div>
@@ -35,17 +38,22 @@ export function Hero() {
           </div>
         </div>
         <div className="relative fade-up fade-up-3">
-          <div className="aspect-[4/5] overflow-hidden rounded-sm bg-muted hover-scale relative">
-            <LandingImage
-              src="/images/hero.jpg"
-              alt="Lomaras Ayurvedic scalp oil with fresh botanicals"
-              width={1280}
-              height={1600}
-              priority
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="w-full h-full object-cover image-float"
-            />
-          </div>
+          <Link
+            href="/product/lomaras-ayurvedic-scalp-oil"
+            className="inline-flex items-center gap-2 group cursor-pointer"
+          >
+            <div className="aspect-[4/5] overflow-hidden rounded-sm bg-muted hover-scale relative">
+              <LandingImage
+                src="/images/hero.jpg"
+                alt="Lomaras Ayurvedic scalp oil with fresh botanicals"
+                width={1280}
+                height={1600}
+                priority
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="w-full h-full object-cover image-float"
+              />
+            </div>
+          </Link>
           <div className="hidden md:block absolute -bottom-6 -left-6 bg-background border border-border px-6 py-4 rounded-sm fade-up fade-up-2">
             <p className="eyebrow">Hand-bottled</p>
             <p className="font-serif text-lg text-primary mt-1">100ml amber glass</p>

@@ -13,10 +13,12 @@ export type Customer = {
 export type Product = {
   id: string;
   name: string;
+  slug: string;
   description: string;
   price: number;
   inventory_count: number;
   is_active: boolean;
+  image_url: string | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -49,13 +51,10 @@ export type Review = {
   customer_id: string | null;
   rating: number;
   review_text: string;
-  image_url: string | null;
-  is_verified_purchase: boolean;
   is_approved: boolean;
+  is_verified_purchase: boolean;
+  image_url: string | null;
   created_at: string;
-  updated_at: string;
-  // Joined field: populated when fetching with customer join
-  customer_name?: string | null;
 };
 
 type Tables = {
@@ -67,7 +66,7 @@ type Tables = {
   };
   products: {
     Row: Product;
-    Insert: Partial<Product> & Pick<Product, "name" | "price">;
+    Insert: Partial<Product> & Pick<Product, "name" | "price" | "slug">;
     Update: Partial<Product>;
     Relationships: [];
   };
@@ -87,9 +86,9 @@ type Tables = {
   };
   reviews: {
     Row: Review;
-    Insert: Omit<Partial<Review>, "id" | "created_at" | "updated_at" | "customer_name"> &
-      Pick<Review, "product_id" | "rating">;
-    Update: Partial<Omit<Review, "id" | "created_at" | "customer_name">>;
+    Insert: Omit<Partial<Review>, "id" | "created_at"> &
+      Pick<Review, "product_id" | "rating" | "review_text">;
+    Update: Partial<Omit<Review, "id" | "created_at">>;
     Relationships: [];
   };
 };

@@ -135,14 +135,16 @@ export default function CheckoutPage() {
         <div className="flex justify-between items-center w-full px-4 md:px-6 py-4 max-w-[1200px] mx-auto">
           <div className="flex items-center gap-4">
             <Link
-              href="/"
+              href="/shop"
               className="hover:opacity-80 transition-opacity duration-300 active:scale-95 duration-200 flex items-center"
             >
               <span className="material-symbols-outlined text-[#596244]">arrow_back</span>
             </Link>
-            <h1 className="font-serif text-xl md:text-2xl text-[#1b1c1c] tracking-[0.2em] uppercase">
-              LIVAARA
-            </h1>
+            <Link href="/">
+              <h1 className="font-serif text-xl md:text-2xl text-[#1b1c1c] tracking-[0.2em] uppercase">
+                LIVAARA
+              </h1>
+            </Link>
           </div>
           <div className="flex items-center gap-6">
             <button className="hover:opacity-80 transition-opacity duration-300 active:scale-95 duration-200 relative">
@@ -323,7 +325,7 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* Razorpay Banner Info */}
-                <div className="mt-8 border border-[#596244]/20 rounded-xl p-6 bg-[#596244]/5 space-y-2">
+                <div className="mt-8 border border-[#596244]/20 rounded-sm p-6 bg-[#596244]/5 space-y-2">
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 rounded-full border-4 border-[#596244] bg-white flex items-center justify-center">
                       <div className="w-2 h-2 rounded-full bg-[#596244]"></div>
@@ -340,7 +342,7 @@ export default function CheckoutPage() {
 
                 <div className="pt-6 flex flex-col-reverse md:flex-row items-center justify-between gap-6">
                   <Link
-                    href="/"
+                    href="/shop"
                     className="font-sans text-sm text-[#474741] flex items-center gap-2 hover:text-[#596244] transition-colors group"
                   >
                     <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">
@@ -361,14 +363,14 @@ export default function CheckoutPage() {
 
             {/* Trust Badges */}
             <section className="pt-12 border-t border-[#c8c7be]/20 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+              <div className="p-6 rounded-sm bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
                 <span className="material-symbols-outlined text-[#596244] text-[32px]">eco</span>
                 <h4 className="font-serif text-base text-[#1b1c1c] font-medium">Pure Botanicals</h4>
                 <p className="font-sans text-xs text-[#474741] leading-relaxed">
                   Sourced from organic Himalayan foothills for maximum potency.
                 </p>
               </div>
-              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+              <div className="p-6 rounded-sm bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
                 <span className="material-symbols-outlined text-[#596244] text-[32px]">
                   clinical_notes
                 </span>
@@ -379,7 +381,7 @@ export default function CheckoutPage() {
                   Ancient wisdom validated by modern dermatological science.
                 </p>
               </div>
-              <div className="p-6 rounded-xl bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
+              <div className="p-6 rounded-sm bg-[#f9f6f1]/50 border border-[#c8c7be]/10 text-center space-y-2">
                 <span className="material-symbols-outlined text-[#596244] text-[32px]">
                   auto_awesome
                 </span>
@@ -395,7 +397,7 @@ export default function CheckoutPage() {
 
           {/* Right Column: Order Summary (Sticky) */}
           <aside className="lg:sticky lg:top-32 space-y-6">
-            <div className="bg-[#f6f3f2] rounded-xl p-8 border border-[#c8c7be]/20 shadow-sm">
+            <div className="bg-[#f6f3f2] rounded-sm p-8 border border-[#c8c7be]/20 shadow-none">
               <h3 className="font-serif text-xl text-[#1b1c1c] mb-6">Order Summary</h3>
 
               {/* Products List */}
@@ -496,7 +498,7 @@ export default function CheckoutPage() {
             </div>
 
             {/* Ritual Prompt */}
-            <div className="p-6 rounded-xl border border-[#596244]/20 bg-[#596244]/5">
+            <div className="p-6 rounded-sm border border-[#596244]/20 bg-[#596244]/5">
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-[#596244]">self_improvement</span>
                 <div>
@@ -527,25 +529,25 @@ export default function CheckoutPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
             <Link
-              href="#"
+              href="/"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="#"
+              href="/"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Terms of Service
             </Link>
             <Link
-              href="#"
+              href="/"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Shipping Information
             </Link>
             <Link
-              href="#"
+              href="/"
               className="font-sans text-xs text-[#596244] font-semibold hover:opacity-80 transition-opacity flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-[16px]">lock</span>

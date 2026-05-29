@@ -50,7 +50,7 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#F8F5F0] w-full max-w-lg rounded-md shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[#F8F5F0] w-full max-w-lg rounded-sm shadow-none border border-stone-200 overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"

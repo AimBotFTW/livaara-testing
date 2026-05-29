@@ -34,7 +34,7 @@ export function CartDrawer() {
         className="fixed inset-0 z-[9998] bg-black/40 backdrop-blur-sm pointer-events-auto"
         onClick={() => toggleCart(false)}
       />
-      <div className="fixed top-0 right-0 z-[9999] w-full max-w-[420px] h-screen bg-[#F8F5F0] flex flex-col shadow-2xl overflow-y-auto text-stone-900 font-sans">
+      <div className="fixed top-0 right-0 z-[9999] w-full max-w-[420px] h-screen bg-[#F8F5F0] flex flex-col shadow-none border-l border-stone-200 overflow-y-auto text-stone-900 font-sans">
         {/* Header */}
         <div className="flex justify-between items-center px-6 h-16 border-b border-stone-200 shrink-0">
           <h2 className="font-serif text-2xl tracking-tight font-medium">Your Cart</h2>

@@ -2,7 +2,8 @@
 
 import { useCart } from "@/lib/context/CartContext";
 import { useRouter } from "next/navigation";
-import { trackShopNowClick } from "@/lib/analytics";
+import Link from "next/link";
+import { trackHeroCTA, trackShopNowClick } from "@/lib/analytics";
 import type { Product as ProductType } from "@/lib/types/database";
 import { formatInr } from "@/lib/utils";
 import { LandingImage } from "./LandingImage";
@@ -42,46 +43,55 @@ export function Product({ product }: ProductSectionProps) {
               </li>
             ))}
           </ul>
-          <div className="mt-10 flex items-center gap-6 flex-wrap">
+          <div className="mt-10">
             <span className="font-serif text-4xl text-primary">{formatInr(product.price)}</span>
-            <a
-              href="https://wa.me/918511414551?text=Hi%20I%20want%20a%20Dosha%20consultation"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-4 text-xs uppercase tracking-[0.2em] bg-accent text-accent-foreground hover:bg-accent/90 transition-colors rounded-sm hover-scale"
-            >
-              Free Dosha Consult
-            </a>
-            <button
-              onClick={() => {
-                trackShopNowClick();
-                addToCart({
-                  id: product.id,
-                  name: product.name,
-                  price: product.price,
-                  quantity: 1,
-                });
-                router.push("/checkout");
-              }}
-              className="inline-flex items-center justify-center px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm hover-scale shadow-lg"
-            >
-              Buy Now
-            </button>
+
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => {
+                  trackHeroCTA();
+                  trackShopNowClick();
+                  addToCart({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                  });
+                  router.push("/checkout");
+                }}
+                className="inline-flex items-center justify-center px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/90 transition-colors rounded-sm hover-scale shadow-lg"
+              >
+                Buy Now
+              </button>
+              <a
+                href="https://wa.me/918511414551?text=Hi%20I%20want%20a%20Dosha%20consultation"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-8 py-4 text-xs uppercase tracking-[0.2em] bg-accent text-accent-foreground hover:bg-accent/90 transition-colors rounded-sm hover-scale"
+              >
+                Free Dosha Consult
+              </a>
+            </div>
           </div>
           <p className="mt-4 text-xs text-muted-foreground fade-up fade-up-3">
             Free shipping across India · 30-day ritual guarantee
           </p>
         </div>
         <div className="order-1 md:order-2">
-          <div className="aspect-square bg-secondary/50 rounded-sm overflow-hidden hover-scale relative">
-            <LandingImage
-              src="/images/lomaras-bottle.jpg"
-              alt="Lomaras Ayurvedic Scalp Oil bottle"
-              width={1024}
-              height={1024}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="w-full h-full object-cover image-float"
-            />
+          <div className="aspect-[4/5] bg-secondary/50 rounded-sm overflow-hidden hover-scale relative">
+            <Link
+              href="/product/lomaras-ayurvedic-scalp-oil"
+              className="block h-full overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              <LandingImage
+                src="/images/lomaras-bottle.jpg"
+                alt="Lomaras Ayurvedic Scalp Oil bottle"
+                width={1024}
+                height={1024}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="w-full h-full object-cover object-top image-float"
+              />
+            </Link>
           </div>
         </div>
       </div>

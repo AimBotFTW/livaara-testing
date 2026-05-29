@@ -26,7 +26,12 @@ export async function POST(req: Request) {
       .update(rawBody)
       .digest("hex");
 
-    if (expectedSignature !== signature) {
+    const expectedBuf = Buffer.from(expectedSignature, "utf8");
+    const providedBuf = Buffer.from(signature, "utf8");
+    if (
+      expectedBuf.length !== providedBuf.length ||
+      !crypto.timingSafeEqual(expectedBuf, providedBuf)
+    ) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
@@ -37,6 +42,8 @@ export async function POST(req: Request) {
       const payment = event.payload.payment.entity;
       const razorpayOrderId = payment.order_id;
       const razorpayPaymentId = payment.id;
+      const paymentAmount = payment.amount;
+      const paymentCurrency = payment.currency;
 
       if (!razorpayOrderId || !razorpayPaymentId) {
         return NextResponse.json({ error: "Invalid payment payload" }, { status: 400 });
@@ -80,6 +87,24 @@ export async function POST(req: Request) {
       if (order.payment_status === "paid") {
         // Idempotency: Already processed via order_id route
         return NextResponse.json({ received: true, message: "Already processed" });
+      }
+
+      const expectedAmountPaise = Math.round(Number(order.total_amount) * 100);
+      if (
+        typeof paymentAmount !== "number" ||
+        paymentCurrency !== "INR" ||
+        paymentAmount !== expectedAmountPaise
+      ) {
+        console.error("[CRITICAL] Webhook amount/currency mismatch", {
+          razorpayOrderId,
+          razorpayPaymentId,
+          expectedAmountPaise,
+          paymentAmount,
+          expectedCurrency: "INR",
+          paymentCurrency,
+          orderId: order.id,
+        });
+        return NextResponse.json({ error: "Payment verification failed" }, { status: 400 });
       }
 
       // Update the order to paid

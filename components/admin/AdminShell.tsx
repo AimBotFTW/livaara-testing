@@ -68,7 +68,9 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
         <button className="text-primary hover:opacity-80 transition-opacity scale-95 active:scale-90">
           <span className="material-symbols-outlined">search</span>
         </button>
-        <h1 className="font-display-lg text-[20px] tracking-widest text-primary uppercase">LIVAARA HQ</h1>
+        <h1 className="font-display-lg text-[20px] tracking-widest text-primary uppercase">
+          LIVAARA HQ
+        </h1>
         <button className="text-primary hover:opacity-80 transition-opacity scale-95 active:scale-90">
           <span className="material-symbols-outlined">notifications</span>
         </button>
@@ -79,7 +81,10 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
         <div className="px-6 mb-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-primary-container flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>
+              <span
+                className="material-symbols-outlined text-on-primary-container"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
                 spa
               </span>
             </div>
@@ -95,8 +100,15 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
           {NAV_ITEMS.map((item) => {
             const active = activeView === item.id;
             return (
-              <div key={item.id} onClick={() => handleNavClick(item.id)} className={desktopNavItemClass(active)}>
-                <span className="material-symbols-outlined" style={active ? { fontVariationSettings: "'FILL' 1" } : {}}>
+              <div
+                key={item.id}
+                onClick={() => handleNavClick(item.id)}
+                className={desktopNavItemClass(active)}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
+                >
                   {item.icon}
                 </span>
                 <span className="text-body-md">{item.label}</span>
@@ -116,7 +128,9 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
           </form>
           <div className="mt-4 p-4 rounded-2xl bg-surface-container-highest/50 border border-white/5">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-on-surface-variant uppercase tracking-tighter">System Status</span>
+              <span className="text-[10px] text-on-surface-variant uppercase tracking-tighter">
+                System Status
+              </span>
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             </div>
             <div className="text-[11px] text-primary">All nodes operational</div>
@@ -155,10 +169,12 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
                 <p className="text-[12px] font-bold text-on-surface group-hover:text-primary transition-colors">
                   Admin
                 </p>
-                <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">Administrator</p>
+                <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">
+                  Administrator
+                </p>
               </div>
               <div className="w-10 h-10 rounded-full border border-primary/30 bg-surface-container-high flex items-center justify-center text-primary overflow-hidden">
-                 <span className="material-symbols-outlined text-[20px]">shield_person</span>
+                <span className="material-symbols-outlined text-[20px]">shield_person</span>
               </div>
             </div>
           </div>
@@ -166,7 +182,10 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
       </header>
 
       {/* MAIN CONTENT AREA */}
-      <main className="pt-24 pb-32 px-6 md:ml-64 md:mt-16 md:p-12 md:pb-12 min-h-[calc(100vh-4rem)] max-w-[1400px] animate-fade-in" data-admin-view={activeView}>
+      <main
+        className="pt-24 pb-32 px-6 md:ml-64 md:mt-16 md:p-12 md:pb-12 min-h-[calc(100vh-4rem)] max-w-[1400px] animate-fade-in"
+        data-admin-view={activeView}
+      >
         {activeView === "overview" && (
           <OverviewPanel metrics={metrics} orders={orders} onOrderSelect={setSelectedOrderId} />
         )}
@@ -185,7 +204,13 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
                 <button
                   type="button"
                   onClick={() => {
-                    const headers = ["Order ID", "Customer Name", "Total Amount", "Order Status", "Date"];
+                    const headers = [
+                      "Order ID",
+                      "Customer Name",
+                      "Total Amount",
+                      "Order Status",
+                      "Date",
+                    ];
                     const rows = orders.map((o) =>
                       [
                         o.displayId,
@@ -200,7 +225,10 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.setAttribute("href", url);
-                    link.setAttribute("download", `livaara_orders_${new Date().toISOString().split("T")[0]}.csv`);
+                    link.setAttribute(
+                      "download",
+                      `livaara_orders_${new Date().toISOString().split("T")[0]}.csv`,
+                    );
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -221,8 +249,15 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
         {NAV_ITEMS.slice(0, 4).map((item) => {
           const active = activeView === item.id;
           return (
-            <div key={item.id} onClick={() => handleNavClick(item.id)} className={mobileNavItemClass(active)}>
-              <span className="material-symbols-outlined" style={active ? { fontVariationSettings: "'FILL' 1" } : {}}>
+            <div
+              key={item.id}
+              onClick={() => handleNavClick(item.id)}
+              className={mobileNavItemClass(active)}
+            >
+              <span
+                className="material-symbols-outlined"
+                style={active ? { fontVariationSettings: "'FILL' 1" } : {}}
+              >
                 {item.icon}
               </span>
               <span className="font-label-sm text-[10px] mt-1">{item.label}</span>

@@ -1,7 +1,7 @@
 import { AdminShell } from "@/components/admin/AdminShell";
 import { getAllReviews } from "@/app/actions/reviews";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import {
   getAdminProducts,

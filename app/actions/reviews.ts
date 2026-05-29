@@ -16,7 +16,7 @@ function getClient() {
  * Fetches only approved reviews for the frontend.
  * Joins with customers to populate customer_name for display.
  */
-export async function getApprovedReviews(): Promise<Review[]> {
+export async function getApprovedReviews(productId: string): Promise<Review[]> {
   const supabase = getClient();
   if (!supabase) return [];
 
@@ -37,6 +37,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
     `,
     )
     .eq("is_approved", true)
+    .eq("product_id", productId)
     .order("created_at", { ascending: false });
 
   if (error || !data) {
@@ -44,12 +45,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
     return [];
   }
 
-  return data.map((r) => {
-    return {
-      ...r,
-      customer_name: "Anonymous",
-    } as Review;
-  });
+  return data as Review[];
 }
 
 /**
@@ -83,12 +79,7 @@ export async function getAllReviews(): Promise<Review[]> {
     return [];
   }
 
-  return data.map((r) => {
-    return {
-      ...r,
-      customer_name: "Anonymous",
-    } as Review;
-  });
+  return data as Review[];
 }
 
 /**
@@ -108,7 +99,8 @@ export async function updateReviewStatus(
     return { success: false, error: error.message };
   }
 
-  revalidatePath("/product");
+  // Because products are dynamic paths now:
+  revalidatePath("/product/[slug]", "page");
   return { success: true };
 }
 

@@ -48,10 +48,10 @@ function SuccessContent() {
       )}
 
       <Link
-        href="/"
+        href="/shop"
         className="block w-full bg-stone-900 text-white font-sans text-sm uppercase tracking-widest py-4 hover:bg-stone-800 transition-colors"
       >
-        Return to Store
+        Continue Shopping
       </Link>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { trackAddToCart } from "@/lib/analytics";
 
 export type CartItem = {
   id: string;
@@ -13,6 +14,7 @@ export type CartItem = {
 type CartContextType = {
   cartItems: CartItem[];
   isCartOpen: boolean;
+  heroProduct: { id: string; name: string; price: number } | null;
   addToCart: (item: CartItem) => void;
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
@@ -22,11 +24,19 @@ type CartContextType = {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  children,
+  initialHeroProduct,
+}: {
+  children: ReactNode;
+  initialHeroProduct?: { id: string; name: string; price: number };
+}) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [heroProduct] = useState(initialHeroProduct || null);
 
   const addToCart = (item: CartItem) => {
+    trackAddToCart();
     setCartItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -60,6 +70,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       value={{
         cartItems,
         isCartOpen,
+        heroProduct,
         addToCart,
         updateQuantity,
         removeFromCart,

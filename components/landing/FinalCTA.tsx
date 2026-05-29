@@ -1,4 +1,5 @@
 import { formatInr } from "@/lib/utils";
+import Link from "next/link";
 
 type FinalCTAProps = {
   price: number;
@@ -16,12 +17,12 @@ export function FinalCTA({ price }: FinalCTAProps) {
           Seven days of craft. Thirty-eight years of wisdom. One oil — formulated for you alone.
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-5">
-          <a
-            href="#"
-            className="inline-flex items-center justify-center px-9 py-4 text-xs uppercase tracking-[0.2em] bg-primary text-primary-foreground hover:bg-primary/85 transition-colors rounded-sm hover-scale"
+          <Link
+            href="/shop"
+            className="inline-flex items-center justify-center px-8 py-4 bg-primary text-primary-foreground uppercase tracking-[0.2em] text-xs transition-colors hover:bg-primary/90 rounded-sm hover-scale"
           >
             Shop Lomaras™ — {formatInr(price)}
-          </a>
+          </Link>
           <a
             href="https://wa.me/+918511414551"
             className="inline-flex items-center px-2 py-4 text-xs uppercase tracking-[0.2em] text-primary border-b border-primary hover:opacity-70 transition-opacity hover-scale"

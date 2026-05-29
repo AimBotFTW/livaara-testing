@@ -1,10 +1,34 @@
 import { sendGAEvent } from "@next/third-parties/google";
 
+declare global {
+  interface Window {
+    clarity?: (method: "event", eventName: string) => void;
+  }
+}
+
+const safeClarityEvent = (eventName: string) => {
+  if (typeof window === "undefined") return;
+  try {
+    window.clarity?.("event", eventName);
+  } catch {
+    // no-op: Clarity not loaded / blocked
+  }
+};
+
 export const trackEvent = (eventName: string, params?: Record<string, unknown>) => {
   if (process.env.NODE_ENV !== "production") {
     console.log("GA Event:", eventName, params);
   }
   sendGAEvent("event", eventName, params || {});
+  safeClarityEvent(eventName);
+};
+
+export const trackHeroCTA = () => {
+  trackEvent("hero_cta_clicked");
+};
+
+export const trackAddToCart = () => {
+  trackEvent("add_to_cart");
 };
 
 export const trackShopNowClick = () => {
@@ -35,4 +59,8 @@ export const trackInvoiceGenerated = (orderId: string) => {
 
 export const trackWhatsappClicked = () => {
   trackEvent("whatsapp_clicked");
+};
+
+export const trackSectionViewed = (sectionName: string) => {
+  trackEvent("section_viewed", { section: sectionName });
 };

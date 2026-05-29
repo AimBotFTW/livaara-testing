@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,18 +22,20 @@ export const metadata: Metadata = {
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   manifest: "/site.webmanifest",
 };
 
-export default function RootLayout({
+import { getHeroProduct } from "@/lib/products";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const heroProduct = await getHeroProduct();
+
   return (
     <html lang="en">
       <head>
@@ -44,7 +47,28 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers
+          initialHeroProduct={{
+            id: heroProduct.id,
+            name: heroProduct.name,
+            price: heroProduct.price,
+          }}
+        >
+          {children}
+        </Providers>
+
+        {/* Microsoft Clarity (global) — App Router safe.
+            Loaded after hydration to avoid SSR/hydration issues. */}
+        <Script id="ms-clarity" strategy="afterInteractive">
+          {`
+            (function(c,l,a,r,i,t,y){
+                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+            })(window, document, "clarity", "script", "wmz0vqajbe");
+          `}
+        </Script>
+
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-NBTSBFJ2NE"} />
       </body>
     </html>

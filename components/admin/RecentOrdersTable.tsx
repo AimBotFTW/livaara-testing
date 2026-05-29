@@ -10,26 +10,26 @@ type RecentOrdersTableProps = {
   onOrderSelect: (orderId: string) => void;
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status }: { status: RecentOrderRow["orderStatus"] }) {
   const s = status.toLowerCase();
   if (s === "delivered" || s === "shipped") {
     return (
       <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 shadow-[0px_0px_10px_rgba(34,197,94,0.1)]">
-        {orderStatusLabel(status as any)}
+        {orderStatusLabel(status)}
       </span>
     );
   }
   if (s === "cancelled") {
     return (
       <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0px_0px_10px_rgba(239,68,68,0.1)]">
-        {orderStatusLabel(status as any)}
+        {orderStatusLabel(status)}
       </span>
     );
   }
   // pending or processing
   return (
     <span className="px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 shadow-[0px_0px_10px_rgba(201,163,91,0.1)] glow-gold">
-      {orderStatusLabel(status as any)}
+      {orderStatusLabel(status)}
     </span>
   );
 }
@@ -53,8 +53,8 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
 
     const sFilter = statusFilter.toLowerCase();
     const oStatus = o.orderStatus?.toLowerCase() || "";
-    const matchesStatus = 
-      sFilter === "all" || 
+    const matchesStatus =
+      sFilter === "all" ||
       oStatus === sFilter ||
       (oStatus === "pending" && sFilter === "processing") ||
       (oStatus === "processing" && sFilter === "pending");
@@ -88,7 +88,9 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
         {orders.length === 0 ? (
           <div className="text-center py-8 text-on-surface-variant text-[14px]">No orders yet</div>
         ) : filteredOrders.length === 0 ? (
-          <div className="text-center py-8 text-on-surface-variant text-[14px]">No orders match your search</div>
+          <div className="text-center py-8 text-on-surface-variant text-[14px]">
+            No orders match your search
+          </div>
         ) : (
           filteredOrders.map((order) => (
             <div
@@ -101,14 +103,18 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
                   <span className="font-bold text-[14px]">{getInitials(order.customerName)}</span>
                 </div>
                 <div>
-                  <h4 className="font-title-md text-[14px] font-semibold text-on-surface">{order.customerName}</h4>
+                  <h4 className="font-title-md text-[14px] font-semibold text-on-surface">
+                    {order.customerName}
+                  </h4>
                   <p className="text-[12px] text-on-surface-variant">
                     {order.displayId} • {formatAdminDate(order.createdAt).split(",")[0]}
                   </p>
                 </div>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <span className="text-[12px] font-bold text-on-surface">{formatAdminCurrency(order.totalAmount)}</span>
+                <span className="text-[12px] font-bold text-on-surface">
+                  {formatAdminCurrency(order.totalAmount)}
+                </span>
                 <StatusBadge status={order.orderStatus} />
               </div>
             </div>
@@ -120,8 +126,12 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
       <section className="hidden md:block glass-card rounded-[24px] overflow-hidden">
         <div className="p-8 flex items-center justify-between border-b border-white/5">
           <div>
-            <h2 className="text-title-md font-title-md text-[20px] font-semibold text-on-surface mb-1">Recent Orders</h2>
-            <p className="text-[12px] text-on-surface-variant">Manage and track your latest luxury transactions.</p>
+            <h2 className="text-title-md font-title-md text-[20px] font-semibold text-on-surface mb-1">
+              Recent Orders
+            </h2>
+            <p className="text-[12px] text-on-surface-variant">
+              Manage and track your latest luxury transactions.
+            </p>
           </div>
           <div className="flex gap-4">
             <input
@@ -167,12 +177,24 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low">
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">Order ID</th>
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">Customer</th>
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">Date</th>
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">Amount</th>
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">Status</th>
-                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5 text-right">Action</th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">
+                  Order ID
+                </th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">
+                  Customer
+                </th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">
+                  Date
+                </th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">
+                  Amount
+                </th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5">
+                  Status
+                </th>
+                <th className="px-8 py-4 font-label-sm text-[12px] uppercase text-on-surface-variant tracking-widest border-b border-white/5 text-right">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -188,7 +210,9 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
               ) : filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 px-8 text-center">
-                    <span className="text-[14px] text-on-surface-variant">No orders match your search</span>
+                    <span className="text-[14px] text-on-surface-variant">
+                      No orders match your search
+                    </span>
                   </td>
                 </tr>
               ) : (
@@ -197,7 +221,7 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
                     "text-secondary border-secondary/20",
                     "text-primary border-primary/20",
                     "text-green-400 border-green-500/20",
-                    "text-on-surface-variant border-white/10"
+                    "text-on-surface-variant border-white/10",
                   ];
                   const colorClass = colors[idx % colors.length];
 
@@ -207,17 +231,27 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
                       className="hover:bg-white/5 transition-colors group cursor-pointer"
                       onClick={() => onOrderSelect(order.id)}
                     >
-                      <td className="px-8 py-5 font-bold text-primary text-[14px]">{order.displayId}</td>
+                      <td className="px-8 py-5 font-bold text-primary text-[14px]">
+                        {order.displayId}
+                      </td>
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-[12px] border ${colorClass}`}>
+                          <div
+                            className={`w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-[12px] border ${colorClass}`}
+                          >
                             {getInitials(order.customerName)}
                           </div>
-                          <span className="text-on-surface font-semibold text-[14px]">{order.customerName}</span>
+                          <span className="text-on-surface font-semibold text-[14px]">
+                            {order.customerName}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-8 py-5 text-on-surface-variant text-[14px]">{formatAdminDate(order.createdAt).split(',')[0]}</td>
-                      <td className="px-8 py-5 text-on-surface font-bold text-[14px]">{formatAdminCurrency(order.totalAmount)}</td>
+                      <td className="px-8 py-5 text-on-surface-variant text-[14px]">
+                        {formatAdminDate(order.createdAt).split(",")[0]}
+                      </td>
+                      <td className="px-8 py-5 text-on-surface font-bold text-[14px]">
+                        {formatAdminCurrency(order.totalAmount)}
+                      </td>
                       <td className="px-8 py-5">
                         <StatusBadge status={order.orderStatus} />
                       </td>
@@ -232,13 +266,17 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
               )}
             </tbody>
           </table>
-          
+
           <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between">
             <p className="text-[12px] text-on-surface-variant font-label-sm">
-              Showing <span className="text-on-surface">{filteredOrders.length}</span> of {orders.length} transactions
+              Showing <span className="text-on-surface">{filteredOrders.length}</span> of{" "}
+              {orders.length} transactions
             </p>
             <div className="flex gap-2">
-              <button className="px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-50" disabled>
+              <button
+                className="px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-on-surface-variant hover:text-on-surface transition-colors disabled:opacity-50"
+                disabled
+              >
                 <span className="material-symbols-outlined text-[18px]">chevron_left</span>
               </button>
               <button className="px-3 py-1.5 rounded-lg bg-surface-container border border-white/5 text-on-surface-variant hover:text-on-surface transition-colors">

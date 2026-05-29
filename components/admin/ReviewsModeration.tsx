@@ -66,7 +66,7 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                 Date
               </th>
               <th className="p-md font-label-caps text-label-caps text-stone-500 uppercase tracking-wider">
-                Customer
+                Customer ID
               </th>
               <th className="p-md font-label-caps text-label-caps text-stone-500 uppercase tracking-wider">
                 Rating
@@ -91,7 +91,7 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                 <td className="p-md">
                   <div className="flex flex-col">
                     <span className="font-medium text-stone-200">
-                      {r.customer_name ?? "Anonymous"}
+                      {r.customer_id ?? "Anonymous"}
                     </span>
                     {r.is_verified_purchase && (
                       <span className="text-[10px] text-[#C8A96A] uppercase tracking-widest mt-1 flex items-center gap-1">
