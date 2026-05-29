@@ -33,10 +33,12 @@ We use conventional commits:
 ## Folder Organization Rules
 - `app/`: Next.js App Router pages and API routes.
 - `components/`: Reusable React components (UI components like Radix primitives go in `components/ui`).
+- `docs/`: Additional project documentation and guides.
 - `lib/`: Utility functions, Supabase clients, and generic helpers.
 - `hooks/`: Custom React hooks.
 - `supabase/`: Database migrations and Supabase configuration.
 - `public/`: Static assets.
+- `project-audit.md`: Internal audit and reference document.
 
 ## Environment Setup Requirements
 1. Node.js 18+ (or compatible).

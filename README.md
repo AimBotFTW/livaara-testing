@@ -24,10 +24,12 @@ Livaara is a modern, full-stack e-commerce web application built with Next.js Ap
   - `app/api/`: API endpoints, including checkout and webhooks.
   - `app/checkout/`: Checkout flow.
 - `components/`: Reusable UI components.
+- `docs/`: Additional project documentation and guides.
 - `lib/`: Utility files (Supabase clients, formatting tools).
 - `hooks/`: React hooks for shared logic.
 - `supabase/`: Database schema and migration files.
 - `public/`: Static images and assets.
+- `project-audit.md`: Internal audit and reference document.
 
 ## Local Setup Instructions
 
