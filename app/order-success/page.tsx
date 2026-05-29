@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, redirect } from "next/navigation";
 import { Suspense } from "react";
 
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("id");
   const orderNumber = searchParams.get("order_number");
+
+  if (!orderId) {
+    redirect("/");
+  }
 
   return (
     <div className="max-w-md w-full bg-white border border-stone-200 p-8 md:p-12 text-center shadow-sm">

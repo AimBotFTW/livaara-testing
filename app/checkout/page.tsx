@@ -6,6 +6,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { trackPaymentSuccess } from "@/lib/analytics";
+import { toast } from "sonner";
 
 declare global {
   interface Window {
@@ -49,7 +50,7 @@ export default function CheckoutPage() {
   const handlePayment = async (e: FormEvent) => {
     e.preventDefault();
     const validItems = cartItems.filter((item) => item.quantity > 0);
-    if (validItems.length === 0) return alert("Your cart is empty");
+    if (validItems.length === 0) return toast.error("Your cart is empty");
 
     setIsProcessing(true);
 
@@ -74,7 +75,9 @@ export default function CheckoutPage() {
         }
       } catch (err) {
         console.error("COD Checkout Error:", err);
-        alert("Failed to place order. Please try again.");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to place order. Please try again.",
+        );
       } finally {
         setIsProcessing(false);
       }
@@ -118,7 +121,7 @@ export default function CheckoutPage() {
             }
           } catch (err) {
             console.error("Order redirect error:", err);
-            alert("Payment successful! Redirecting to your order.");
+            toast.success("Payment successful! Redirecting to your order.");
           }
         },
         prefill: {
@@ -134,12 +137,21 @@ export default function CheckoutPage() {
       const rzp = new window.Razorpay(options as unknown as Record<string, unknown>);
       rzp.on("payment.failed", function (response: { error: { description: string } }) {
         console.error("Payment Failed:", response.error);
-        alert("Payment failed! Please try again.");
+        toast.error("Payment failed! Please try again.");
       });
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert("Failed to initiate payment");
+      const msg = err instanceof Error ? err.message : "Failed to initiate payment";
+      if (msg === "Invalid phone number") {
+        toast.error("Invalid phone number");
+      } else if (msg === "Invalid pincode") {
+        toast.error("Invalid pincode");
+      } else if (msg === "Insufficient inventory for product") {
+        toast.error("Sorry, this item is out of stock");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsProcessing(false);
     }
