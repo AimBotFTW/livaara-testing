@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Review } from "@/lib/types/database";
-import { updateReviewStatus } from "@/app/actions/reviews";
+import { updateReviewStatus, deleteReview } from "@/app/actions/reviews";
 import { toast } from "sonner";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 
@@ -22,14 +22,26 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
     setLoadingId(null);
   };
 
-  const handleReject = async (id: string) => {
+  const handleUnapprove = async (id: string) => {
     setLoadingId(id);
     const result = await updateReviewStatus(id, false);
     if (result.success) {
       setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, is_approved: false } : r)));
-      toast.success("Review hidden");
+      toast.success("Review un-approved");
     } else {
-      toast.error(result.error || "Failed to hide review");
+      toast.error(result.error || "Failed to un-approve review");
+    }
+    setLoadingId(null);
+  };
+
+  const handleDelete = async (id: string) => {
+    setLoadingId(id);
+    const result = await deleteReview(id);
+    if (result.success) {
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Review deleted");
+    } else {
+      toast.error(result.error || "Failed to delete review");
     }
     setLoadingId(null);
   };
@@ -66,7 +78,10 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                 Date
               </th>
               <th className="p-md font-label-caps text-label-caps text-stone-500 uppercase tracking-wider">
-                Customer ID
+                Reviewer
+              </th>
+              <th className="p-md font-label-caps text-label-caps text-stone-500 uppercase tracking-wider">
+                Product ID
               </th>
               <th className="p-md font-label-caps text-label-caps text-stone-500 uppercase tracking-wider">
                 Rating
@@ -91,7 +106,7 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                 <td className="p-md">
                   <div className="flex flex-col">
                     <span className="font-medium text-stone-200">
-                      {r.customer_id ?? "Anonymous"}
+                      {r.reviewer_name ?? "Anonymous"}
                     </span>
                     {r.is_verified_purchase && (
                       <span className="text-[10px] text-[#C8A96A] uppercase tracking-widest mt-1 flex items-center gap-1">
@@ -100,6 +115,7 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                     )}
                   </div>
                 </td>
+                <td className="p-md font-body-sm text-stone-400">{r.product_id}</td>
                 <td className="p-md">
                   <div className="flex gap-0.5 text-[#C8A96A]">{r.rating} / 5</div>
                 </td>
@@ -135,13 +151,21 @@ export function ReviewsModeration({ reviews: initialReviews }: { reviews: Review
                     {r.is_approved && (
                       <button
                         disabled={loadingId === r.id}
-                        onClick={() => handleReject(r.id)}
-                        className="p-1.5 text-stone-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 rounded transition-colors disabled:opacity-50"
-                        title="Hide"
+                        onClick={() => handleUnapprove(r.id)}
+                        className="p-1.5 text-stone-400 hover:text-stone-300 hover:bg-stone-500/10 border border-transparent hover:border-stone-500/30 rounded transition-colors disabled:opacity-50"
+                        title="Un-approve"
                       >
-                        <XCircle size={16} />
+                        <Clock size={16} />
                       </button>
                     )}
+                    <button
+                      disabled={loadingId === r.id}
+                      onClick={() => handleDelete(r.id)}
+                      className="p-1.5 text-stone-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 rounded transition-colors disabled:opacity-50"
+                      title="Delete"
+                    >
+                      <XCircle size={16} />
+                    </button>
                   </div>
                 </td>
               </tr>

@@ -195,7 +195,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     {reviews.map((r) => (
                       <ReviewCard
                         key={r.id}
-                        name={r.customer_id ? `User ${r.customer_id.substring(0, 4)}` : "Anonymous"}
+                        name={r.reviewer_name ?? "Verified Customer"}
                         date={new Date(r.created_at).toLocaleDateString()}
                         title={r.rating === 5 ? "Luxurious ritual" : "Beautiful product"}
                         content={r.review_text}

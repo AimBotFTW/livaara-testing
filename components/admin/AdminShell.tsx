@@ -62,7 +62,7 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
       : "flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary/80 transition-colors cursor-pointer";
 
   return (
-    <div className="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen admin-mission-control">
+    <div className="bg-background text-on-background font-body-md text-body-md antialiased h-screen overflow-y-auto admin-mission-control">
       {/* MOBILE TOP BAR */}
       <header className="flex md:hidden bg-surface/80 backdrop-blur-md fixed top-0 w-full z-50 justify-between items-center px-6 h-16 border-b border-white/5">
         <button className="text-primary hover:opacity-80 transition-opacity scale-95 active:scale-90">
@@ -71,9 +71,6 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
         <h1 className="font-display-lg text-[20px] tracking-widest text-primary uppercase">
           LIVAARA HQ
         </h1>
-        <button className="text-primary hover:opacity-80 transition-opacity scale-95 active:scale-90">
-          <span className="material-symbols-outlined">notifications</span>
-        </button>
       </header>
 
       {/* DESKTOP SIDEBAR */}
@@ -160,10 +157,6 @@ export function AdminShell({ metrics, orders, reviews, products, customers }: Ad
             Create Manual Order
           </button>
           <div className="flex items-center gap-4 text-on-surface-variant">
-            <button className="hover:text-primary transition-colors cursor-pointer">
-              <span className="material-symbols-outlined">notifications</span>
-            </button>
-            <div className="h-8 w-[1px] bg-white/10 mx-2"></div>
             <div className="flex items-center gap-3 cursor-pointer group">
               <div className="text-right">
                 <p className="text-[12px] font-bold text-on-surface group-hover:text-primary transition-colors">

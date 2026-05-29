@@ -28,6 +28,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
   const [customerName, setCustomerName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [prakriti, setPrakriti] = useState<string[]>([]);
   const [shippingAddress, setShippingAddress] = useState("");
   const [paymentLabel, setPaymentLabel] = useState<"Cash" | "Bank Transfer">("Cash");
   const [productId, setProductId] = useState(defaultProduct?.id ?? "");
@@ -67,6 +68,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
     setCustomerName("");
     setEmail("");
     setPhone("");
+    setPrakriti([]);
     setShippingAddress("");
     setPaymentLabel("Cash");
     setQuantity(1);
@@ -89,6 +91,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
         customerName,
         email,
         phone,
+        prakriti,
         shippingAddress,
         paymentLabel,
         productId,
@@ -186,6 +189,32 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
                 onChange={(e) => setPhone(e.target.value)}
                 className={inputClass}
               />
+            </div>
+            <div>
+              <label className={labelClass}>PRAKRITI (DOSHA TYPE)</label>
+              <div className="flex gap-2">
+                {["Vata", "Pitta", "Kapha"].map((dosha) => {
+                  const isSelected = prakriti.includes(dosha);
+                  return (
+                    <button
+                      key={dosha}
+                      type="button"
+                      onClick={() =>
+                        setPrakriti((prev) =>
+                          prev.includes(dosha) ? prev.filter((d) => d !== dosha) : [...prev, dosha],
+                        )
+                      }
+                      className={`flex-1 py-sm font-body-sm text-body-sm transition-colors border ${
+                        isSelected
+                          ? "border-[#C8A96A] text-[#C8A96A] bg-[#C8A96A]/10"
+                          : "border-stone-800/50 bg-stone-950 text-stone-200 hover:border-stone-700"
+                      }`}
+                    >
+                      {dosha}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <label htmlFor="address" className={labelClass}>

@@ -4,21 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { Review } from "@/lib/types/database";
 import { revalidatePath } from "next/cache";
 
-function getClient() {
-  try {
-    return createAdminClient();
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Fetches only approved reviews for the frontend.
  * Joins with customers to populate customer_name for display.
  */
 export async function getApprovedReviews(productId: string): Promise<Review[]> {
-  const supabase = getClient();
-  if (!supabase) return [];
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("reviews")
@@ -27,13 +18,13 @@ export async function getApprovedReviews(productId: string): Promise<Review[]> {
       id,
       product_id,
       customer_id,
+      reviewer_name,
       rating,
       review_text,
       image_url,
       is_verified_purchase,
       is_approved,
-      created_at,
-      updated_at
+      created_at
     `,
     )
     .eq("is_approved", true)
@@ -41,7 +32,7 @@ export async function getApprovedReviews(productId: string): Promise<Review[]> {
     .order("created_at", { ascending: false });
 
   if (error || !data) {
-    console.warn("[getApprovedReviews]", error?.message);
+    console.error("[getApprovedReviews]", error?.message);
     return [];
   }
 
@@ -53,8 +44,7 @@ export async function getApprovedReviews(productId: string): Promise<Review[]> {
  * Joins with customers to populate customer_name for display.
  */
 export async function getAllReviews(): Promise<Review[]> {
-  const supabase = getClient();
-  if (!supabase) return [];
+  const supabase = createAdminClient();
 
   const { data, error } = await supabase
     .from("reviews")
@@ -63,19 +53,19 @@ export async function getAllReviews(): Promise<Review[]> {
       id,
       product_id,
       customer_id,
+      reviewer_name,
       rating,
       review_text,
       image_url,
       is_verified_purchase,
       is_approved,
-      created_at,
-      updated_at
+      created_at
     `,
     )
     .order("created_at", { ascending: false });
 
   if (error || !data) {
-    console.warn("[getAllReviews]", error?.message);
+    console.error("[getAllReviews]", error?.message);
     return [];
   }
 
@@ -89,8 +79,7 @@ export async function updateReviewStatus(
   id: string,
   approved: boolean,
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = getClient();
-  if (!supabase) return { success: false, error: "Database not connected" };
+  const supabase = createAdminClient();
 
   const { error } = await supabase.from("reviews").update({ is_approved: approved }).eq("id", id);
 
@@ -111,15 +100,16 @@ export async function updateReviewStatus(
 export async function submitReview(data: {
   product_id: string;
   customer_id?: string;
+  reviewer_name: string;
   rating: number;
   review_text: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const supabase = getClient();
-  if (!supabase) return { success: false, error: "Database not connected" };
+  const supabase = createAdminClient();
 
   const { error } = await supabase.from("reviews").insert({
     product_id: data.product_id,
     customer_id: data.customer_id ?? null,
+    reviewer_name: data.reviewer_name,
     rating: data.rating,
     review_text: data.review_text,
     is_approved: false,
@@ -131,5 +121,19 @@ export async function submitReview(data: {
     return { success: false, error: error.message };
   }
 
+  return { success: true };
+}
+
+export async function deleteReview(id: string): Promise<{ success: boolean; error?: string }> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.from("reviews").delete().eq("id", id);
+
+  if (error) {
+    console.error("[deleteReview]", error.message);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath("/product/[slug]", "page");
   return { success: true };
 }

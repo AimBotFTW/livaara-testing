@@ -148,6 +148,7 @@ export type ManualOrderInput = {
   customerName: string;
   email: string;
   phone: string;
+  prakriti?: string[];
   shippingAddress: string;
   paymentLabel: "Cash" | "Bank Transfer";
   productId: string;
@@ -211,10 +212,14 @@ export async function createManualOrderAction(input: ManualOrderInput) {
 
     if (existingCustomer) {
       customerId = existingCustomer.id;
+      await supabase
+        .from("customers")
+        .update({ prakriti: input.prakriti ?? [] })
+        .eq("id", customerId);
     } else {
       const { data: newCustomer, error: customerError } = await supabase
         .from("customers")
-        .insert({ name, phone, email })
+        .insert({ name, phone, email, prakriti: input.prakriti ?? [] })
         .select("id")
         .single();
 

@@ -53,11 +53,7 @@ export function RecentOrdersTable({ orders, onOrderSelect }: RecentOrdersTablePr
 
     const sFilter = statusFilter.toLowerCase();
     const oStatus = o.orderStatus?.toLowerCase() || "";
-    const matchesStatus =
-      sFilter === "all" ||
-      oStatus === sFilter ||
-      (oStatus === "pending" && sFilter === "processing") ||
-      (oStatus === "processing" && sFilter === "pending");
+    const matchesStatus = sFilter === "all" || oStatus === sFilter;
 
     return matchesSearch && matchesStatus;
   });

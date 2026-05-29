@@ -15,12 +15,17 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!reviewerName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
     if (rating === 0) {
       toast.error("Please select a rating");
       return;
@@ -33,13 +38,15 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
     setIsSubmitting(true);
     const result = await submitReview({
       product_id: productId,
+      reviewer_name: reviewerName.trim(),
       rating,
       review_text: reviewText.trim(),
     });
 
     if (result.success) {
-      toast.success("Thank you! Your review has been submitted for moderation.");
+      toast.success("Thank you — your review is pending approval.");
       onClose();
+      setReviewerName("");
       setRating(0);
       setReviewText("");
     } else {
@@ -63,6 +70,20 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
           <p className="text-stone-500 text-sm mb-8">Share your ritual experience with us.</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div>
+              <label className="block text-xs uppercase tracking-widest text-stone-500 font-medium mb-2">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={reviewerName}
+                onChange={(e) => setReviewerName(e.target.value)}
+                placeholder="How should we call you?"
+                className="w-full bg-white border border-stone-200 rounded-sm px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-[#C8A96A] transition-colors"
+                required
+              />
+            </div>
+
             <div>
               <label className="block text-xs uppercase tracking-widest text-stone-500 font-medium mb-3">
                 Rating

@@ -147,19 +147,19 @@ export async function POST(req: Request) {
       }
 
       // 3. Send Transactional Emails
-      try {
-        const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
-        const customer = (Array.isArray(order.customers)
-          ? order.customers[0]
-          : order.customers) as unknown as { name: string; email: string };
-        const sa = order.shipping_address as unknown as Record<string, string>;
+      const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+      const customer = (Array.isArray(order.customers)
+        ? order.customers[0]
+        : order.customers) as unknown as { name: string; email: string };
+      const sa = order.shipping_address as unknown as Record<string, string>;
 
-        if (customer && customer.email && sa) {
-          const addressString = `${sa.firstName} ${sa.lastName}\n${sa.address} ${sa.apartment ? sa.apartment + " " : ""}\n${sa.city}, ${sa.state} ${sa.pinCode}`;
+      if (customer && customer.email && sa) {
+        const addressString = `${sa.firstName} ${sa.lastName}\n${sa.address} ${sa.apartment ? sa.apartment + " " : ""}\n${sa.city}, ${sa.state} ${sa.pinCode}`;
 
-          // Customer Receipt
+        // Customer Receipt
+        try {
           await resend.emails.send({
-            from: "LIVAARA <onboarding@resend.dev>",
+            from: `LIVAARA <${process.env.RESEND_FROM_EMAIL}>`,
             to: customer.email,
             subject: `Your LIVAARA Order #${(order.order_number ?? 0).toString().padStart(3, "0")} Confirmation`,
             react: CustomerReceiptEmail({
@@ -169,11 +169,15 @@ export async function POST(req: Request) {
               totalAmount: order.total_amount,
             }) as React.ReactElement,
           });
+        } catch (error) {
+          console.error("[Resend customer email error]", error);
+        }
 
-          // Admin Notification
-          if (process.env.ADMIN_EMAIL) {
+        // Admin Notification
+        if (process.env.ADMIN_EMAIL) {
+          try {
             await resend.emails.send({
-              from: "LIVAARA System <onboarding@resend.dev>",
+              from: `LIVAARA System <${process.env.RESEND_FROM_EMAIL}>`,
               to: process.env.ADMIN_EMAIL,
               subject: `New Order Received! #${(order.order_number ?? 0).toString().padStart(3, "0")}`,
               react: AdminNotificationEmail({
@@ -183,10 +187,10 @@ export async function POST(req: Request) {
                 totalAmount: order.total_amount,
               }) as React.ReactElement,
             });
+          } catch (error) {
+            console.error("[Resend admin email error]", error);
           }
         }
-      } catch (emailError) {
-        console.error("Failed to send transactional emails:", emailError);
       }
 
       return NextResponse.json({ received: true });
