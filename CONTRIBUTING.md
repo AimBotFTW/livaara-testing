@@ -1,39 +1,45 @@
 # Contributing to Livaara
 
-We welcome contributions to the Livaara codebase. Please adhere to the following guidelines to maintain code quality and ensure a smooth review process.
+First off, thank you for considering contributing to Livaara! It's people like you that make this tool great.
 
 ## Branch Strategy
-- `main` is the production-ready branch.
-- Create feature branches from `main` using the format `feature/your-feature-name` or `fix/your-bug-fix`.
+- `main` is the primary branch. It should always be deployable.
+- Feature branches should be created from `main` using the format `feature/your-feature-name`.
+- Bugfix branches should use the format `bugfix/your-bugfix-name`.
 
 ## Commit Conventions
-Follow conventional commits to ensure a clear history:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation updates
-- `chore:` for routine tasks, dependency updates, or formatting
-- `refactor:` for code refactoring without changing behavior
+We use conventional commits:
+- `feat:` for new features.
+- `fix:` for bug fixes.
+- `docs:` for documentation changes.
+- `style:` for code style changes (formatting, etc.).
+- `refactor:` for code changes that neither fix a bug nor add a feature.
+- `test:` for adding missing tests.
+- `chore:` for updating build tasks, package manager configs, etc.
 
 ## Pull Request Process
-1. Ensure your code passes all linting and type-checking (`npm run lint` and `npm run build`).
-2. Write a clear, descriptive PR title and description.
-3. Reference any related issues or tickets.
-4. Request a review from at least one core team member.
-5. Once approved, the PR will be squash-merged into `main`.
+1. Ensure your code follows the coding standards.
+2. Update the README.md with details of changes to the interface, if applicable.
+3. Submit a Pull Request targeting the `main` branch.
+4. Your PR will be reviewed by maintainers. Please address any feedback promptly.
 
 ## Coding Standards
-- **TypeScript:** Use strict typing. Avoid `any`.
-- **Components:** Use functional components and Radix UI primitives where applicable. Follow the existing Tailwind CSS aesthetic.
-- **State:** Prefer server-side data fetching where possible. Use React Context for global client state (e.g., Cart).
-- **Formatting:** Code must be formatted with Prettier (`npm run format`).
+- Use TypeScript for all new code.
+- Functional components with React Hooks are preferred.
+- Use Tailwind CSS for styling.
+- Ensure all components are responsive and accessible (we heavily use Radix UI).
+- Follow the existing formatting rules (Prettier/ESLint are configured).
 
 ## Folder Organization Rules
-- `app/api/*`: strictly for serverless API endpoints.
-- `app/admin/*`: admin-only pages protected by middleware.
-- `components/ui/*`: shared UI components.
-- `lib/*`: utility functions, helpers, and types.
-- `supabase/migrations/*`: database schema changes. Do not alter existing migrations; always create a new migration file.
+- `app/`: Next.js App Router pages and API routes.
+- `components/`: Reusable React components (UI components like Radix primitives go in `components/ui`).
+- `lib/`: Utility functions, Supabase clients, and generic helpers.
+- `hooks/`: Custom React hooks.
+- `supabase/`: Database migrations and Supabase configuration.
+- `public/`: Static assets.
 
 ## Environment Setup Requirements
-- Copy `.env.example` to `.env.local` and obtain the necessary keys from your team lead.
-- Do not commit `.env.local` or any real API keys to the repository.
+1. Node.js 18+ (or compatible).
+2. Install dependencies with `npm install` or `bun install`.
+3. Set up the `.env.local` file based on `.env.example`.
+4. Run `npm run dev` to start the development server.
