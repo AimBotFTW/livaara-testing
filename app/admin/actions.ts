@@ -485,3 +485,28 @@ export async function deleteCustomerAction(customerId: string) {
     return { ok: false as const, error: e instanceof Error ? e.message : "Delete failed" };
   }
 }
+
+export async function markCodAsPaid(orderId: string) {
+  const session = await guard();
+  if (!session.ok) return { success: false, error: session.error };
+
+  try {
+    const supabase = admin();
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        order_status: "processing",
+      })
+      .eq("id", orderId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: e instanceof Error ? e.message : "Update failed" };
+  }
+}
