@@ -34,6 +34,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing customer information" }, { status: 400 });
     }
 
+    if (!/^[6-9]\d{9}$/.test(String(formData.phone || ""))) {
+      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
+    }
+
+    if (!/^\d{6}$/.test(String(formData.pinCode || ""))) {
+      return NextResponse.json({ error: "Invalid pincode" }, { status: 400 });
+    }
+
     const key_id = process.env.RAZORPAY_KEY_ID;
     const key_secret = process.env.RAZORPAY_KEY_SECRET;
 

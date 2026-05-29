@@ -123,6 +123,14 @@ export async function submitReview(data: {
     return { success: false, error: "Too many submissions. Please try again later." };
   }
 
+  if (data.review_text.trim().length > 2000) {
+    return { success: false, error: "Review must be under 2000 characters" };
+  }
+
+  if (data.reviewer_name.trim().length > 100) {
+    return { success: false, error: "Name must be under 100 characters" };
+  }
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("reviews").insert({

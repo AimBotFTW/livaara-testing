@@ -16,9 +16,6 @@ const safeClarityEvent = (eventName: string) => {
 };
 
 export const trackEvent = (eventName: string, params?: Record<string, unknown>) => {
-  if (process.env.NODE_ENV !== "production") {
-    console.log("GA Event:", eventName, params);
-  }
   sendGAEvent("event", eventName, params || {});
   safeClarityEvent(eventName);
 };

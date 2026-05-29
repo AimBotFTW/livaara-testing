@@ -19,7 +19,6 @@ const labelClass =
   "font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest block mb-xs";
 
 export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDrawerProps) {
-  console.log("ManualOrderDrawer render. isOpen:", isOpen);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
