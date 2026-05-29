@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Providers } from "@/components/Providers";
+import Footer from "@/components/Footer";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
 import "./globals.css";
@@ -55,6 +56,7 @@ export default async function RootLayout({
           }}
         >
           {children}
+          <Footer />
         </Providers>
 
         {/* Microsoft Clarity (global) — App Router safe.
