@@ -32,32 +32,32 @@ export function CartProvider({
   children: ReactNode;
   initialHeroProduct?: { id: string; name: string; price: number };
 }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("livaara_cart");
-        if (stored) {
-          return JSON.parse(stored);
-        }
-      } catch (err) {
-        console.error("Failed to parse cart from localStorage:", err);
-      }
-    }
-    return [];
-  });
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [heroProduct] = useState(initialHeroProduct || null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("livaara_cart", JSON.stringify(cartItems));
-      } catch (err) {
-        console.error("Failed to save cart to localStorage:", err);
+    try {
+      const stored = localStorage.getItem("livaara_cart");
+      if (stored) {
+        setCartItems(JSON.parse(stored));
       }
+    } catch (err) {
+      console.error("Failed to parse cart from localStorage:", err);
     }
-  }, [cartItems]);
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem("livaara_cart", JSON.stringify(cartItems));
+    } catch (err) {
+      console.error("Failed to save cart to localStorage:", err);
+    }
+  }, [cartItems, hydrated]);
 
   const addToCart = (item: CartItem, openCart = true) => {
     trackAddToCart();
