@@ -16,14 +16,15 @@ export async function middleware(request: NextRequest) {
       .map((s) => s.trim().toLowerCase())
       .filter(Boolean);
 
-    if (allowlist.length > 0) {
-      const email = (middlewareUser?.email ?? "").trim().toLowerCase();
-      if (!email || !allowlist.includes(email)) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/admin/login";
-        redirectUrl.searchParams.set("redirect", pathname);
-        return NextResponse.redirect(redirectUrl);
-      }
+    const email = (middlewareUser?.email ?? "").trim().toLowerCase();
+    if (allowlist.length === 0) {
+      console.error("[CRITICAL] ADMIN_EMAIL env var is not set — blocking all admin access");
+    }
+    if (!email || allowlist.length === 0 || !allowlist.includes(email)) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/admin/login";
+      redirectUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
