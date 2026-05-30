@@ -1,6 +1,10 @@
 const requireEnv = (name: string): string => {
   const value = process.env[name];
   if (!value) {
+    // Don't break the Next.js static build phase
+    if (process.env.npm_lifecycle_event === "build") {
+      return "";
+    }
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;

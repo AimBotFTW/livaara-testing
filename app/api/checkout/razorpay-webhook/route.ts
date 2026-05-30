@@ -129,6 +129,30 @@ export async function POST(req: Request) {
       // when the pending order is created via the create_order_transaction RPC.
       // If payment fails or is abandoned, pg_cron will restore the inventory.
 
+      // Fetch order items to populate the receipt email
+      const { data: items, error: itemsError } = await supabase
+        .from("order_items")
+        .select(
+          `
+          quantity,
+          price_at_purchase,
+          products ( name )
+        `,
+        )
+        .eq("order_id", order.id);
+
+      const itemsForEmail: { name: string; quantity: number; price: number }[] = [];
+      if (!itemsError && items) {
+        for (const item of items) {
+          const product = Array.isArray(item.products) ? item.products[0] : item.products;
+          itemsForEmail.push({
+            name: String((product as Record<string, unknown>)?.name || "Unknown Product"),
+            quantity: Number(item.quantity),
+            price: Number(item.price_at_purchase),
+          });
+        }
+      }
+
       // 3. Send Transactional Emails
       const resendApiKey = process.env.RESEND_API_KEY;
       if (!resendApiKey) {
