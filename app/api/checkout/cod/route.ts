@@ -7,6 +7,7 @@ import { CustomerReceiptEmail } from "@/components/emails/CustomerReceiptEmail";
 import { AdminNotificationEmail } from "@/components/emails/AdminNotificationEmail";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
+import { ADMIN_EMAIL, RESEND_API_KEY, RESEND_FROM_EMAIL } from "@/lib/env";
 
 const limiters = new Map<string, RateLimiter>();
 const MAX_TRACKED_IPS = 5000;
@@ -27,12 +28,22 @@ export async function POST(req: Request) {
     const headersList = await headers();
     const ip = headersList.get("x-forwarded-for") ?? "unknown";
 
-    const limiter = getLimiter(ip);
-    if (!limiter.tryRemoveTokens(1)) {
-      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    try {
+      const limiter = getLimiter(ip);
+      if (!limiter.tryRemoveTokens(1)) {
+        return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+      }
+    } catch (err) {
+      console.warn("Rate limiter failed gracefully", err);
     }
 
     const body = await req.json();
+
+    // 1. Honeypot check
+    if (body.website !== undefined && body.website !== "") {
+      return NextResponse.json({ success: true, message: "Order received" });
+    }
+
     const { cartItems, formData } = body;
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
@@ -47,11 +58,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
     }
 
-    if (!/^\d{6}$/.test(String(formData.pinCode || ""))) {
+    if (!/^[1-9]\d{5}$/.test(String(formData.pinCode || ""))) {
       return NextResponse.json({ error: "Invalid pincode" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
+
+    // 2. Phone number abuse check
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: abuseCustomers } = await supabase
+      .from("customers")
+      .select("id")
+      .eq("phone", formData.phone);
+
+    if (abuseCustomers && abuseCustomers.length > 0) {
+      const customerIds = abuseCustomers.map((c) => c.id);
+      const { count: recentCodCount } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true })
+        .in("customer_id", customerIds)
+        .eq("payment_method", "cod")
+        .eq("payment_status", "pending")
+        .gte("created_at", twentyFourHoursAgo);
+
+      if (recentCodCount !== null && recentCodCount >= 2) {
+        return NextResponse.json(
+          { error: "Our team will contact you to confirm before processing another COD order." },
+          { status: 429 },
+        );
+      }
+    }
     let subtotal = 0;
     const orderItemsToInsert = [];
     const itemsForEmail = [];
@@ -192,18 +228,13 @@ export async function POST(req: Request) {
     }
 
     // Send Transactional Emails
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) {
-      console.error(
-        "[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent",
-      );
-    }
-    const resend = new Resend(resendApiKey ?? "");
+    const resendApiKey = RESEND_API_KEY;
+    const resend = new Resend(resendApiKey);
     const addressString = `${shippingAddress.firstName} ${shippingAddress.lastName}\n${shippingAddress.address} ${shippingAddress.apartment ? shippingAddress.apartment + " " : ""}\n${shippingAddress.city}, ${shippingAddress.state} ${shippingAddress.pinCode}`;
 
     try {
       await resend.emails.send({
-        from: `LIVAARA <${process.env.RESEND_FROM_EMAIL}>`,
+        from: `LIVAARA <${RESEND_FROM_EMAIL}>`,
         to: formData.email,
         subject: `Order Confirmed — Lomaras™ Ayurvedic Scalp Oil`,
         html: await render(
@@ -223,11 +254,11 @@ export async function POST(req: Request) {
       console.error("[Resend customer email error]", error);
     }
 
-    if (process.env.ADMIN_EMAIL) {
+    if (ADMIN_EMAIL) {
       try {
         await resend.emails.send({
-          from: `LIVAARA System <${process.env.RESEND_FROM_EMAIL}>`,
-          to: process.env.ADMIN_EMAIL,
+          from: `LIVAARA System <${RESEND_FROM_EMAIL}>`,
+          to: ADMIN_EMAIL,
           subject: `New COD Order #${String(newOrder.order_number).padStart(3, "0")} — Lomaras™`,
           html: await render(
             React.createElement(AdminNotificationEmail, {

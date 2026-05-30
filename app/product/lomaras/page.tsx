@@ -2,16 +2,80 @@ import Image from "next/image";
 import { Header } from "@/components/landing/Header";
 import { Footer } from "@/components/landing/Footer";
 import { InteractiveBotanicals } from "@/components/InteractiveBotanicals";
-import { getHeroProduct } from "@/lib/products";
+import { getHeroProduct, getProductRatingStats } from "@/lib/products";
 import { StickyBuyBar } from "@/components/product/StickyBuyBar";
+import { ProductUtilities } from "@/components/product/ProductUtilities";
 
+import type { Metadata } from "next";
 import { ReviewSection } from "@/components/product/ReviewSection";
+
+export const metadata: Metadata = {
+  title: "Lomaras™ Ayurvedic Scalp Oil — Cold-Infused Hair Ritual",
+  description:
+    "Lomaras™ by LIVAARA. Cold-infused over 7 days with Bhringraj, Amla, Neem, Brahmi & Methi. 100ml amber glass. ₹599 with free shipping across India.",
+  alternates: {
+    canonical: "https://www.livaara.com/product/lomaras",
+  },
+  openGraph: {
+    title: "Lomaras™ Ayurvedic Scalp Oil",
+    description:
+      "Cold-infused over 7 days with Bhringraj, Amla, Neem, Brahmi & Methi. 38 years of Ayurvedic craft. ₹599.",
+    url: "https://www.livaara.com/product/lomaras",
+    images: [
+      {
+        url: "/images/lomaras-bottle.jpg",
+        width: 1024,
+        height: 1280,
+        alt: "Lomaras™ Ayurvedic Scalp Oil — 100ml amber glass bottle",
+      },
+    ],
+  },
+};
 
 export default async function LomarasProductPage() {
   const product = await getHeroProduct();
+  const ratingStats = await getProductRatingStats(product.id);
 
   return (
     <div className="min-h-screen bg-[#F8F5F0] font-sans text-stone-900">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: "Lomaras™ Ayurvedic Scalp Oil",
+            description:
+              "Cold-infused over seven days with Bhringraj, Amla, Neem, Brahmi and Methi. 100ml amber glass bottle. 38 years of Vaidya-led Ayurvedic practice.",
+            image: "https://www.livaara.com/images/lomaras-bottle.jpg",
+            brand: {
+              "@type": "Brand",
+              name: "LIVAARA",
+            },
+            offers: {
+              "@type": "Offer",
+              url: "https://www.livaara.com/product/lomaras",
+              priceCurrency: "INR",
+              price: product.price,
+              priceValidUntil: "2026-12-31",
+              availability: "https://schema.org/InStock",
+              seller: {
+                "@type": "Organization",
+                name: "LIVAARA",
+              },
+            },
+            ...(ratingStats && {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: ratingStats.ratingValue.toString(),
+                reviewCount: ratingStats.reviewCount.toString(),
+                bestRating: "5",
+                worstRating: "1",
+              },
+            }),
+          }),
+        }}
+      />
       <Header shopPrice={product.price} />
 
       {/* spacer for fixed header */}
@@ -80,6 +144,8 @@ export default async function LomarasProductPage() {
                   <li>3. Leave overnight; wash gently.</li>
                 </ol>
               </div>
+
+              <ProductUtilities />
             </div>
           </div>
         </section>

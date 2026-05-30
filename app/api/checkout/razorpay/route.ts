@@ -3,6 +3,7 @@ import Razorpay from "razorpay";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
+import { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/env";
 
 const limiters = new Map<string, RateLimiter>();
 const MAX_TRACKED_IPS = 5000;
@@ -43,17 +44,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
     }
 
-    if (!/^\d{6}$/.test(String(formData.pinCode || ""))) {
+    if (!/^[1-9]\d{5}$/.test(String(formData.pinCode || ""))) {
       return NextResponse.json({ error: "Invalid pincode" }, { status: 400 });
     }
 
-    const key_id = process.env.RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-    if (!key_id || !key_secret) {
-      console.error("Missing Razorpay Keys in environment variables");
-      return NextResponse.json({ error: "Payment gateway not configured" }, { status: 500 });
-    }
+    const key_id = RAZORPAY_KEY_ID;
+    const key_secret = RAZORPAY_KEY_SECRET;
 
     const supabase = createAdminClient();
 

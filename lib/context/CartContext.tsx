@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { trackAddToCart } from "@/lib/analytics";
 
 export type CartItem = {
@@ -32,9 +32,32 @@ export function CartProvider({
   children: ReactNode;
   initialHeroProduct?: { id: string; name: string; price: number };
 }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("livaara_cart");
+        if (stored) {
+          return JSON.parse(stored);
+        }
+      } catch (err) {
+        console.error("Failed to parse cart from localStorage:", err);
+      }
+    }
+    return [];
+  });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [heroProduct] = useState(initialHeroProduct || null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("livaara_cart", JSON.stringify(cartItems));
+      } catch (err) {
+        console.error("Failed to save cart to localStorage:", err);
+      }
+    }
+  }, [cartItems]);
 
   const addToCart = (item: CartItem, openCart = true) => {
     trackAddToCart();
@@ -70,6 +93,13 @@ export function CartProvider({
 
   const clearCart = () => {
     setCartItems([]);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("livaara_cart");
+      } catch (err) {
+        console.error("Failed to clear cart from localStorage:", err);
+      }
+    }
   };
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);

@@ -48,14 +48,11 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="bg-white border-b border-stone-200 p-4 shrink-0 text-center space-y-2">
+        {/* Free Shipping Banner */}
+        <div className="bg-white border-b border-stone-200 px-4 py-3 shrink-0 text-center">
           <p className="font-sans text-xs uppercase tracking-widest text-[#6B8E7E] font-medium">
-            Congratulations! Your order qualifies for free shipping.
+            Free shipping on all orders across India
           </p>
-          <div className="w-full h-1 bg-stone-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#6B8E7E] w-full" />
-          </div>
         </div>
 
         {/* Product List */}

@@ -17,7 +17,8 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState("");
   const [open, setOpen] = useState(false);
-  const { toggleCart, addToCart, heroProduct } = useCart();
+  const { toggleCart, addToCart, heroProduct, cartItems } = useCart();
+  const cartItemCount = cartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0;
   const lastTrackedSection = useRef<string>("");
 
   useEffect(() => {
@@ -78,6 +79,18 @@ export function Header({ shopPrice = 599 }: HeaderProps) {
           >
             Shop Now
           </Link>
+          <button
+            onClick={() => toggleCart(true)}
+            className="md:hidden text-primary p-2 relative"
+            aria-label="Cart"
+          >
+            <span className="material-symbols-outlined">shopping_bag</span>
+            {cartItemCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-primary text-primary-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-medium">
+                {cartItemCount}
+              </span>
+            )}
+          </button>
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden text-primary p-2"

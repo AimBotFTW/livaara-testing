@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus, PaymentStatus } from "@/lib/types/database";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ORDER_FLOW: OrderStatus[] = ["processing", "shipped", "delivered"];
 
 function admin() {
@@ -171,6 +172,22 @@ export async function createManualOrderAction(input: ManualOrderInput) {
 
   if (!name || !phone || !address) {
     return { ok: false as const, error: "Name, phone, and address are required" };
+  }
+
+  if (!/^[6-9]\d{9}$/.test(phone)) {
+    return { ok: false as const, error: "Please enter a valid 10-digit Indian mobile number" };
+  }
+
+  if (input.email && !EMAIL_REGEX.test(input.email.trim())) {
+    return { ok: false as const, error: "Please enter a valid email address" };
+  }
+
+  if (name.length < 2 || name.length > 50) {
+    return { ok: false as const, error: "Name must be 2–50 characters" };
+  }
+
+  if (address.length < 10) {
+    return { ok: false as const, error: "Address must be at least 10 characters" };
   }
 
   if (input.quantity < 1) {
@@ -357,6 +374,14 @@ export async function updateOrderAction(input: UpdateOrderInput) {
   if (!session.ok) return { ok: false as const, error: session.error };
 
   try {
+    if (
+      typeof input.totalAmount !== "number" ||
+      input.totalAmount < 0 ||
+      !isFinite(input.totalAmount)
+    ) {
+      return { ok: false as const, error: "Invalid order total" };
+    }
+
     const supabase = admin();
 
     const { data: order, error: fetchErr } = await supabase
@@ -428,13 +453,29 @@ export async function updateCustomerAction(
   if (!session.ok) return { ok: false as const, error: session.error };
 
   try {
+    const trimmedName = data.name.trim();
+    const trimmedEmail = data.email.trim();
+    const trimmedPhone = data.phone.trim();
+
+    if (trimmedName.length < 2 || trimmedName.length > 50) {
+      return { ok: false as const, error: "Name must be 2–50 characters" };
+    }
+
+    if (trimmedEmail && !EMAIL_REGEX.test(trimmedEmail)) {
+      return { ok: false as const, error: "Please enter a valid email address" };
+    }
+
+    if (trimmedPhone && !/^[6-9]\d{9}$/.test(trimmedPhone)) {
+      return { ok: false as const, error: "Please enter a valid 10-digit Indian mobile number" };
+    }
+
     const supabase = admin();
     const { error } = await supabase
       .from("customers")
       .update({
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: trimmedPhone,
       })
       .eq("id", customerId);
 

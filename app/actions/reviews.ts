@@ -6,6 +6,10 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
 
+function stripHtml(input: string): string {
+  return input.replace(/<[^>]*>/g, "").trim();
+}
+
 const limiters = new Map<string, RateLimiter>();
 
 function getLimiter(ip: string) {
@@ -131,14 +135,29 @@ export async function submitReview(data: {
     return { success: false, error: "Name must be under 100 characters" };
   }
 
+  const cleanName = stripHtml(data.reviewer_name);
+  const cleanText = stripHtml(data.review_text);
+
+  if (cleanText.length < 20) {
+    return { success: false, error: "Review must be at least 20 characters" };
+  }
+
+  if (cleanName.length < 2) {
+    return { success: false, error: "Name must be at least 2 characters" };
+  }
+
+  if (!Number.isInteger(data.rating) || data.rating < 1 || data.rating > 5) {
+    return { success: false, error: "Please select a valid star rating" };
+  }
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("reviews").insert({
     product_id: data.product_id,
     customer_id: data.customer_id ?? null,
-    reviewer_name: data.reviewer_name,
+    reviewer_name: cleanName,
     rating: data.rating,
-    review_text: data.review_text,
+    review_text: cleanText,
     is_approved: false,
     is_verified_purchase: false,
   });

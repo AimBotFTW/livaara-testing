@@ -17,21 +17,36 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
   const [reviewText, setReviewText] = useState("");
   const [reviewerName, setReviewerName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    rating?: string;
+    review?: string;
+  }>({});
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    setErrors({});
+    onClose();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reviewerName.trim()) {
-      toast.error("Please enter your name");
-      return;
+
+    const newErrors: { name?: string; rating?: string; review?: string } = {};
+
+    if (reviewerName.trim().length < 2) {
+      newErrors.name = "Please enter your name (minimum 2 characters)";
     }
     if (rating === 0) {
-      toast.error("Please select a rating");
-      return;
+      newErrors.rating = "Please select a star rating";
     }
-    if (!reviewText.trim()) {
-      toast.error("Please write your review");
+    if (reviewText.trim().length < 20) {
+      newErrors.review = "Please write at least 20 characters";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -45,7 +60,7 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
 
     if (result.success) {
       toast.success("Thank you — your review is pending approval.");
-      onClose();
+      handleClose();
       setReviewerName("");
       setRating(0);
       setReviewText("");
@@ -59,7 +74,7 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
     <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-[#F8F5F0] w-full max-w-lg rounded-sm shadow-none border border-stone-200 overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 text-stone-400 hover:text-stone-900 transition-colors"
         >
           <X size={20} />
@@ -77,11 +92,16 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
               <input
                 type="text"
                 value={reviewerName}
-                onChange={(e) => setReviewerName(e.target.value)}
+                onChange={(e) => {
+                  setReviewerName(e.target.value);
+                  if (e.target.value.trim().length >= 2) {
+                    setErrors((prev) => ({ ...prev, name: undefined }));
+                  }
+                }}
                 placeholder="How should we call you?"
                 className="w-full bg-white border border-stone-200 rounded-sm px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-[#C8A96A] transition-colors"
-                required
               />
+              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
 
             <div>
@@ -93,7 +113,10 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
                   <button
                     type="button"
                     key={star}
-                    onClick={() => setRating(star)}
+                    onClick={() => {
+                      setRating(star);
+                      setErrors((prev) => ({ ...prev, rating: undefined }));
+                    }}
                     onMouseEnter={() => setHoverRating(star)}
                     onMouseLeave={() => setHoverRating(0)}
                     className="text-[#C8A96A] hover:scale-110 transition-transform focus:outline-none"
@@ -105,6 +128,7 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
                   </button>
                 ))}
               </div>
+              {errors.rating && <p className="mt-1 text-sm text-red-600">{errors.rating}</p>}
             </div>
 
             <div>
@@ -113,12 +137,27 @@ export function ReviewFormModal({ isOpen, onClose, productId }: ReviewFormModalP
               </label>
               <textarea
                 value={reviewText}
-                onChange={(e) => setReviewText(e.target.value)}
+                onChange={(e) => {
+                  setReviewText(e.target.value);
+                  if (e.target.value.trim().length >= 20) {
+                    setErrors((prev) => ({ ...prev, review: undefined }));
+                  }
+                }}
+                maxLength={500}
                 placeholder="Tell us what you loved..."
                 rows={4}
                 className="w-full bg-white border border-stone-200 rounded-sm px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-[#C8A96A] transition-colors resize-none"
-                required
               />
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  {errors.review && <p className="mt-1 text-sm text-red-600">{errors.review}</p>}
+                </div>
+                <p
+                  className={`mt-1 text-xs text-right ${reviewText.length < 20 ? "text-amber-500" : "text-stone-400"}`}
+                >
+                  {reviewText.length} / 500
+                </p>
+              </div>
             </div>
 
             <button

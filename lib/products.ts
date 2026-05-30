@@ -80,3 +80,29 @@ export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
 
   return data;
 }
+
+export async function getProductRatingStats(productId: string): Promise<{
+  ratingValue: number;
+  reviewCount: number;
+} | null> {
+  const supabase = createAdminClient();
+
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("rating")
+    .eq("product_id", productId)
+    .eq("is_approved", true);
+
+  if (error || !data || data.length < 3) {
+    // Return null if fewer than 3 approved reviews
+    // Google requires minimum reviews before showing stars
+    return null;
+  }
+
+  const avg = data.reduce((sum, r) => sum + r.rating, 0) / data.length;
+
+  return {
+    ratingValue: Math.round(avg * 10) / 10, // round to 1 decimal
+    reviewCount: data.length,
+  };
+}

@@ -18,6 +18,8 @@ const inputClass =
 const labelClass =
   "font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest block mb-xs";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDrawerProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -42,6 +44,12 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
     "paid",
   );
   const [notes, setNotes] = useState("");
+  const [errors, setErrors] = useState<{
+    customerName?: string;
+    email?: string;
+    phone?: string;
+    shippingAddress?: string;
+  }>({});
 
   useEffect(() => {
     if (isOpen && defaultProduct && !productId) {
@@ -78,6 +86,7 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
     setOrderStatus("processing");
     setPaymentStatus("paid");
     setNotes("");
+    setErrors({});
     if (defaultProduct) setProductId(defaultProduct.id);
   };
 
@@ -87,6 +96,32 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
       toast.error("No product selected");
       return;
     }
+
+    const newErrors: typeof errors = {};
+
+    if (customerName.trim().length < 2 || customerName.trim().length > 50) {
+      newErrors.customerName = "Name must be 2–50 characters";
+    }
+
+    if (!EMAIL_REGEX.test(email.trim())) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!/^[6-9]\d{9}$/.test(phone.trim())) {
+      newErrors.phone = "Please enter a valid 10-digit Indian mobile number";
+    }
+
+    if (shippingAddress.trim().length < 10) {
+      newErrors.shippingAddress = "Please enter a full address (minimum 10 characters)";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+
     startTransition(async () => {
       const result = await createManualOrderAction({
         customerName,
@@ -162,9 +197,18 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
                 id="customerName"
                 required
                 value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={(e) => {
+                  setCustomerName(e.target.value);
+                  const val = e.target.value.trim();
+                  if (val.length >= 2 && val.length <= 50) {
+                    setErrors((prev) => ({ ...prev, customerName: undefined }));
+                  }
+                }}
                 className={inputClass}
               />
+              {errors.customerName && (
+                <p className="mt-1 text-sm text-red-400">{errors.customerName}</p>
+              )}
             </div>
             <div>
               <label htmlFor="email" className={labelClass}>
@@ -175,9 +219,15 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (EMAIL_REGEX.test(e.target.value.trim())) {
+                    setErrors((prev) => ({ ...prev, email: undefined }));
+                  }
+                }}
                 className={inputClass}
               />
+              {errors.email && <p className="mt-1 text-sm text-red-400">{errors.email}</p>}
             </div>
             <div>
               <label htmlFor="phone" className={labelClass}>
@@ -188,9 +238,15 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
                 type="tel"
                 required
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (/^[6-9]\d{9}$/.test(e.target.value.trim())) {
+                    setErrors((prev) => ({ ...prev, phone: undefined }));
+                  }
+                }}
                 className={inputClass}
               />
+              {errors.phone && <p className="mt-1 text-sm text-red-400">{errors.phone}</p>}
             </div>
             <div>
               <label className={labelClass}>PRAKRITI (DOSHA TYPE)</label>
@@ -227,9 +283,17 @@ export function ManualOrderDrawer({ isOpen, onClose, products }: ManualOrderDraw
                 required
                 rows={3}
                 value={shippingAddress}
-                onChange={(e) => setShippingAddress(e.target.value)}
+                onChange={(e) => {
+                  setShippingAddress(e.target.value);
+                  if (e.target.value.trim().length >= 10) {
+                    setErrors((prev) => ({ ...prev, shippingAddress: undefined }));
+                  }
+                }}
                 className={`${inputClass} resize-none`}
               />
+              {errors.shippingAddress && (
+                <p className="mt-1 text-sm text-red-400">{errors.shippingAddress}</p>
+              )}
             </div>
           </section>
 

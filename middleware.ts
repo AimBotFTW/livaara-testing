@@ -11,6 +11,8 @@ export async function middleware(request: NextRequest) {
   const isAdmin = pathname.startsWith("/admin");
 
   if (isAdmin && !isLogin) {
+    // Note: See lib/env.ts for centralized environment variable validation.
+    // We use process.env.ADMIN_EMAIL directly here for Edge runtime compatibility.
     const allowlist = (process.env.ADMIN_EMAIL ?? "")
       .split(",")
       .map((s) => s.trim().toLowerCase())
