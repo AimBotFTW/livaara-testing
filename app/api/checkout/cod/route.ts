@@ -11,6 +11,10 @@ import { RateLimiter } from "limiter";
 const limiters = new Map<string, RateLimiter>();
 
 function getLimiter(ip: string) {
+  // Prevent memory leak by clearing if it gets too large
+  if (limiters.size > 10000) {
+    limiters.clear();
+  }
   if (!limiters.has(ip)) {
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 5, interval: "minute" }));
   }
@@ -135,46 +139,29 @@ export async function POST(req: Request) {
       pinCode: formData.pinCode,
     };
 
-    const { data: newOrder, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        customer_id: customerId,
-        total_amount: totalAmount,
-        payment_method: "cod",
-        payment_status: "pending",
-        order_status: "processing",
-        cod_charge: codCharge,
-        shipping_address: shippingAddress,
-      })
-      .select("id, order_number")
-      .single();
+    const orderData = {
+      customer_id: customerId,
+      total_amount: totalAmount,
+      payment_method: "cod",
+      payment_status: "pending",
+      order_status: "processing",
+      cod_charge: codCharge,
+      shipping_address: shippingAddress,
+    };
 
-    if (orderError) {
-      console.error("Order creation failed:", orderError);
-      return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
-    }
+    const { data: newOrder, error: orderError } = await supabase.rpc("create_order_transaction", {
+      p_order_data: orderData,
+      p_items: orderItemsToInsert,
+    });
 
-    // Insert order items
-    const orderItemsWithOrderId = orderItemsToInsert.map((item) => ({
-      ...item,
-      order_id: newOrder.id,
-    }));
-
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItemsWithOrderId);
-
-    if (itemsError) {
-      console.error("Failed to insert order items:", itemsError);
-    }
-
-    // Decrement inventory securely via RPC
-    for (const item of orderItemsToInsert) {
-      const { error: rpcError } = await supabase.rpc("decrement_product_inventory", {
-        p_product_id: item.product_id,
-        p_qty: item.quantity,
-      });
-      if (rpcError) {
-        console.error("Failed to decrement inventory:", rpcError);
-      }
+    if (orderError || !newOrder) {
+      console.error("Order transaction failed:", orderError);
+      return NextResponse.json(
+        {
+          error: orderError?.message || "Failed to create order (possibly insufficient inventory)",
+        },
+        { status: 500 },
+      );
     }
 
     // Send Transactional Emails

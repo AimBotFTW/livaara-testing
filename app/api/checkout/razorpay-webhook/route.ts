@@ -125,28 +125,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
       }
 
-      // 2. Fetch order items to decrement inventory
-      const { data: items, error: itemsError } = await supabase
-        .from("order_items")
-        .select("product_id, quantity")
-        .eq("order_id", order.id);
-
-      if (itemsError || !items) {
-        console.error("Failed to fetch order items:", itemsError);
-      } else {
-        // Decrement inventory securely via RPC
-        for (const item of items) {
-          const { error: rpcError } = await supabase.rpc("decrement_product_inventory", {
-            p_product_id: item.product_id,
-            p_qty: item.quantity,
-          });
-          if (rpcError) {
-            console.error("Failed to decrement inventory:", rpcError);
-            // We don't throw here to ensure the order stays paid and emails are sent,
-            // but in a robust system we'd flag this for admin review.
-          }
-        }
-      }
+      // 2. We no longer decrement inventory here because it is decremented and locked
+      // when the pending order is created via the create_order_transaction RPC.
+      // If payment fails or is abandoned, pg_cron will restore the inventory.
 
       // 3. Send Transactional Emails
       const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");

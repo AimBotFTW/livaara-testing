@@ -2,22 +2,22 @@ import Image from "next/image";
 
 const features = [
   {
-    image: "/images/1.png",
+    image: "/images/1.jpeg",
     title1: "CLEAN",
     title2: "INGREDIENTS",
   },
   {
-    image: "/images/2.png",
+    image: "/images/2.jpeg",
     title1: "FAST",
     title2: "RESULTS",
   },
   {
-    image: "/images/3.png",
+    image: "/images/3.jpeg",
     title1: "TOXINS",
     title2: "FREE",
   },
   {
-    image: "/images/4.png",
+    image: "/images/4.jpeg",
     title1: "CRUELTY",
     title2: "FREE",
   },

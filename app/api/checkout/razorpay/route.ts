@@ -7,6 +7,9 @@ import { RateLimiter } from "limiter";
 const limiters = new Map<string, RateLimiter>();
 
 function getLimiter(ip: string) {
+  if (limiters.size > 10000) {
+    limiters.clear();
+  }
   if (!limiters.has(ip)) {
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 5, interval: "minute" }));
   }
@@ -142,35 +145,27 @@ export async function POST(req: Request) {
       pinCode: formData.pinCode,
     };
 
-    const { data: newOrder, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        customer_id: customerId,
-        total_amount: totalAmount,
-        payment_status: "pending",
-        order_status: "pending",
-        shipping_address: shippingAddress,
-        razorpay_order_id: razorpayOrder.id,
-      })
-      .select("id, order_number")
-      .single();
+    const orderData = {
+      customer_id: customerId,
+      total_amount: totalAmount,
+      payment_method: "razorpay",
+      payment_status: "pending",
+      order_status: "pending",
+      shipping_address: shippingAddress,
+      razorpay_order_id: razorpayOrder.id,
+    };
 
-    if (orderError) {
+    const { data: newOrder, error: orderError } = await supabase.rpc("create_order_transaction", {
+      p_order_data: orderData,
+      p_items: orderItemsToInsert,
+    });
+
+    if (orderError || !newOrder) {
       console.error("Order creation failed:", orderError);
-      return NextResponse.json({ error: "Failed to create pending order" }, { status: 500 });
-    }
-
-    // Insert pending order items
-    const orderItemsWithOrderId = orderItemsToInsert.map((item) => ({
-      ...item,
-      order_id: newOrder.id,
-    }));
-
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItemsWithOrderId);
-
-    if (itemsError) {
-      console.error("Failed to insert order items:", itemsError);
-      return NextResponse.json({ error: "Failed to create order items" }, { status: 500 });
+      return NextResponse.json(
+        { error: orderError?.message || "Failed to create pending order" },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json({

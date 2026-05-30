@@ -9,6 +9,9 @@ import { RateLimiter } from "limiter";
 const limiters = new Map<string, RateLimiter>();
 
 function getLimiter(ip: string) {
+  if (limiters.size > 10000) {
+    limiters.clear();
+  }
   if (!limiters.has(ip)) {
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 3, interval: "hour" }));
   }
