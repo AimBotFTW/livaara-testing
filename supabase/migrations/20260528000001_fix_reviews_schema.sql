@@ -7,6 +7,7 @@ ALTER TABLE reviews ADD COLUMN is_approved BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE reviews ADD COLUMN customer_id UUID REFERENCES customers (id) ON DELETE SET NULL;
 ALTER TABLE reviews ADD COLUMN image_url TEXT;
 ALTER TABLE reviews ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS reviewer_name TEXT;
 
 -- Migrate data from old columns to new columns
 UPDATE reviews SET is_approved = (status = 'approved');

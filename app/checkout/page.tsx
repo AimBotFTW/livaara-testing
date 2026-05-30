@@ -1,11 +1,15 @@
 "use client";
 
 import { useCart } from "@/lib/context/CartContext";
-import { useState, FormEvent } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { trackPaymentSuccess } from "@/lib/analytics";
+import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckoutFormSchema, CheckoutFormData } from "@/lib/validations/checkout";
 
 declare global {
   interface Window {
@@ -25,56 +29,167 @@ function formatCurrency(amount: number) {
 }
 
 export default function CheckoutPage() {
-  const { cartItems, cartTotal, toggleCart, updateQuantity, removeFromCart } = useCart();
+  const { cartItems, cartTotal, toggleCart, clearCart, updateQuantity, removeFromCart } = useCart();
   const router = useRouter();
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "cod">("razorpay");
-  const [formData, setFormData] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    address: "",
-    apartment: "",
-    city: "",
-    state: "",
-    pinCode: "",
-    phone: "",
+  const honeypotRef = useRef<HTMLInputElement>(null);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<CheckoutFormData>({
+    resolver: zodResolver(CheckoutFormSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const [isFetchingPincode, setIsFetchingPincode] = useState(false);
+  const pincodeValue = watch("pincode");
 
-  const handlePayment = async (e: FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (!pincodeValue) return;
+    if (!/^[1-9]\d{5}$/.test(pincodeValue)) return;
+
+    const handler = setTimeout(async () => {
+      setIsFetchingPincode(true);
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincodeValue}`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (
+          data &&
+          data[0] &&
+          data[0].Status === "Success" &&
+          data[0].PostOffice &&
+          data[0].PostOffice.length > 0
+        ) {
+          const postOffice = data[0].PostOffice[0];
+          const apiState = postOffice.State;
+          const apiDistrict = postOffice.District;
+
+          if (apiDistrict) {
+            setValue("city", apiDistrict, { shouldValidate: true, shouldDirty: true });
+          }
+
+          if (apiState) {
+            const STATE_NAME_MAP: Record<string, string> = {
+              "Andaman & Nicobar Islands": "Andaman and Nicobar Islands",
+              "Andaman And Nicobar Islands": "Andaman and Nicobar Islands",
+              "Dadra & Nagar Haveli": "Dadra and Nagar Haveli and Daman and Diu",
+              "Dadra and Nagar Haveli": "Dadra and Nagar Haveli and Daman and Diu",
+              "Daman & Diu": "Dadra and Nagar Haveli and Daman and Diu",
+              "Jammu & Kashmir": "Jammu and Kashmir",
+              "NCT of Delhi": "Delhi",
+            };
+
+            const resolved = STATE_NAME_MAP[apiState] ?? apiState;
+
+            const VALID_STATES = [
+              "Andhra Pradesh",
+              "Arunachal Pradesh",
+              "Assam",
+              "Bihar",
+              "Chhattisgarh",
+              "Goa",
+              "Gujarat",
+              "Haryana",
+              "Himachal Pradesh",
+              "Jharkhand",
+              "Karnataka",
+              "Kerala",
+              "Madhya Pradesh",
+              "Maharashtra",
+              "Manipur",
+              "Meghalaya",
+              "Mizoram",
+              "Nagaland",
+              "Odisha",
+              "Punjab",
+              "Rajasthan",
+              "Sikkim",
+              "Tamil Nadu",
+              "Telangana",
+              "Tripura",
+              "Uttar Pradesh",
+              "Uttarakhand",
+              "West Bengal",
+              "Andaman and Nicobar Islands",
+              "Chandigarh",
+              "Dadra and Nagar Haveli and Daman and Diu",
+              "Delhi",
+              "Jammu and Kashmir",
+              "Ladakh",
+              "Lakshadweep",
+              "Puducherry",
+            ];
+
+            if (VALID_STATES.includes(resolved)) {
+              setValue("state", resolved as CheckoutFormData["state"], {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        // Fail silently
+      } finally {
+        setIsFetchingPincode(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [pincodeValue, setValue]);
+
+  const onSubmit = async (data: CheckoutFormData) => {
     const validItems = cartItems.filter((item) => item.quantity > 0);
-    if (validItems.length === 0) return alert("Your cart is empty");
+    if (validItems.length === 0) return toast.error("Your cart is empty");
 
     setIsProcessing(true);
 
-    setIsProcessing(true);
+    const formData = {
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName || "",
+      address: data.address,
+      apartment: data.apartment || "",
+      city: data.city,
+      state: data.state,
+      pinCode: data.pincode,
+      phone: data.phone,
+    };
+
+    const websiteValue = honeypotRef.current?.value || "";
 
     if (paymentMethod === "cod") {
       try {
         const res = await fetch("/api/checkout/cod", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cartItems: validItems, formData }),
+          body: JSON.stringify({ cartItems: validItems, formData, website: websiteValue }),
         });
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to create order");
+        const resData = await res.json();
+        if (!res.ok) throw new Error(resData.error || "Failed to create order");
 
+        clearCart();
         toggleCart(false);
-        if (data.orderNumber) {
-          router.push(`/order-success?id=${data.orderId}&order_number=${data.orderNumber}`);
+        if (resData.orderNumber) {
+          router.push(`/order-success?id=${resData.orderId}&order_number=${resData.orderNumber}`);
         } else {
-          router.push(`/order-success?id=${data.orderId}`);
+          router.push(`/order-success?id=${resData.orderId}`);
         }
       } catch (err) {
         console.error("COD Checkout Error:", err);
-        alert("Failed to place order. Please try again.");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to place order. Please try again.",
+        );
       } finally {
         setIsProcessing(false);
       }
@@ -86,7 +201,7 @@ export default function CheckoutPage() {
       const res = await fetch("/api/checkout/razorpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cartItems: validItems, formData }),
+        body: JSON.stringify({ cartItems: validItems, formData, website: websiteValue }),
       });
 
       const order = await res.json();
@@ -108,6 +223,7 @@ export default function CheckoutPage() {
             // Webhook handles the actual database update and emails asynchronously
             trackPaymentSuccess(order.internalOrderId, order.amount / 100);
 
+            clearCart();
             toggleCart(false);
             if (order.internalOrderNumber) {
               router.push(
@@ -118,13 +234,13 @@ export default function CheckoutPage() {
             }
           } catch (err) {
             console.error("Order redirect error:", err);
-            alert("Payment successful! Redirecting to your order.");
+            toast.success("Payment successful! Redirecting to your order.");
           }
         },
         prefill: {
-          name: `${formData.firstName} ${formData.lastName}`.trim(),
-          email: formData.email,
-          contact: formData.phone,
+          name: `${data.firstName} ${data.lastName || ""}`.trim(),
+          email: data.email,
+          contact: data.phone,
         },
         theme: {
           color: "#596244", // Deep sage green
@@ -134,12 +250,21 @@ export default function CheckoutPage() {
       const rzp = new window.Razorpay(options as unknown as Record<string, unknown>);
       rzp.on("payment.failed", function (response: { error: { description: string } }) {
         console.error("Payment Failed:", response.error);
-        alert("Payment failed! Please try again.");
+        toast.error("Payment failed! Please try again.");
       });
       rzp.open();
     } catch (err) {
       console.error(err);
-      alert("Failed to initiate payment");
+      const msg = err instanceof Error ? err.message : "Failed to initiate payment";
+      if (msg === "Invalid phone number") {
+        toast.error("Invalid phone number");
+      } else if (msg === "Invalid pincode") {
+        toast.error("Invalid pincode");
+      } else if (msg === "Insufficient inventory for product") {
+        toast.error("Sorry, this item is out of stock");
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -217,19 +342,28 @@ export default function CheckoutPage() {
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-[1fr_400px] gap-12 lg:gap-16 items-start">
           {/* Left Column: Form */}
           <div className="space-y-12">
-            <form onSubmit={handlePayment} className="space-y-12">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+              <input
+                type="text"
+                name="website"
+                ref={honeypotRef}
+                style={{ display: "none" }}
+                tabIndex={-1}
+                autoComplete="off"
+              />
+
               {/* Contact Section */}
               <section className="space-y-6">
                 <div className="relative">
                   <input
                     type="email"
-                    name="email"
                     placeholder="Email or mobile phone number"
-                    value={formData.email}
-                    onChange={handleChange}
+                    {...register("email")}
                     className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                    required
                   />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  )}
                   <div className="mt-4 flex items-center gap-2">
                     <input
                       type="checkbox"
@@ -251,105 +385,160 @@ export default function CheckoutPage() {
                 <h2 className="font-serif text-2xl text-[#1b1c1c]">Shipping Address</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
-                    <select className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none appearance-none cursor-pointer text-[#1b1c1c]">
-                      <option>India</option>
-                      <option>United States</option>
-                      <option>Canada</option>
-                      <option>United Kingdom</option>
-                      <option>Europe</option>
-                    </select>
+                    <div className="w-full border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base text-[#1b1c1c] flex items-center justify-between">
+                      <span>India</span>
+                      <span className="text-xs text-[#474741]/60">Shipping within India only</span>
+                    </div>
                   </div>
 
                   <div className="relative">
                     <input
                       type="text"
-                      name="firstName"
                       placeholder="First name"
-                      value={formData.firstName}
-                      onChange={handleChange}
+                      {...register("firstName")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
                     />
+                    {errors.firstName && (
+                      <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                    )}
                   </div>
 
                   <div className="relative">
                     <input
                       type="text"
-                      name="lastName"
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={handleChange}
+                      placeholder="Last name (optional)"
+                      {...register("lastName")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
                     />
+                    {errors.lastName && (
+                      <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                    )}
                   </div>
 
                   <div className="md:col-span-2 relative">
                     <input
                       type="text"
-                      name="address"
                       placeholder="Address"
-                      value={formData.address}
-                      onChange={handleChange}
+                      {...register("address")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
                     />
+                    {errors.address && (
+                      <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+                    )}
                   </div>
 
                   <div className="md:col-span-2 relative">
                     <input
                       type="text"
-                      name="apartment"
                       placeholder="Apartment, suite, etc. (optional)"
-                      value={formData.apartment}
-                      onChange={handleChange}
+                      {...register("apartment")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
                     />
+                    {errors.apartment && (
+                      <p className="mt-1 text-sm text-red-600">{errors.apartment.message}</p>
+                    )}
                   </div>
 
                   <div className="relative">
                     <input
                       type="text"
-                      name="city"
                       placeholder="City"
-                      value={formData.city}
-                      onChange={handleChange}
+                      {...register("city")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
                     />
+                    {errors.city && (
+                      <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <input
-                      type="text"
-                      name="state"
-                      placeholder="State"
-                      value={formData.state}
-                      onChange={handleChange}
-                      className="bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
-                    />
-                    <input
-                      type="text"
-                      name="pinCode"
-                      placeholder="PIN / ZIP code"
-                      value={formData.pinCode}
-                      onChange={handleChange}
-                      className="bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative">
+                    <div className="relative">
+                      <select
+                        {...register("state")}
+                        className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors text-[#1b1c1c] appearance-none cursor-pointer"
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Select your state
+                        </option>
+                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Chhattisgarh">Chhattisgarh</option>
+                        <option value="Goa">Goa</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Haryana">Haryana</option>
+                        <option value="Himachal Pradesh">Himachal Pradesh</option>
+                        <option value="Jharkhand">Jharkhand</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Madhya Pradesh">Madhya Pradesh</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Manipur">Manipur</option>
+                        <option value="Meghalaya">Meghalaya</option>
+                        <option value="Mizoram">Mizoram</option>
+                        <option value="Nagaland">Nagaland</option>
+                        <option value="Odisha">Odisha</option>
+                        <option value="Punjab">Punjab</option>
+                        <option value="Rajasthan">Rajasthan</option>
+                        <option value="Sikkim">Sikkim</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tripura">Tripura</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Uttarakhand">Uttarakhand</option>
+                        <option value="West Bengal">West Bengal</option>
+                        <option value="Andaman and Nicobar Islands">
+                          Andaman and Nicobar Islands
+                        </option>
+                        <option value="Chandigarh">Chandigarh</option>
+                        <option value="Dadra and Nagar Haveli and Daman and Diu">
+                          Dadra and Nagar Haveli and Daman and Diu
+                        </option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                        <option value="Ladakh">Ladakh</option>
+                        <option value="Lakshadweep">Lakshadweep</option>
+                        <option value="Puducherry">Puducherry</option>
+                      </select>
+                      <span className="material-symbols-outlined absolute right-0 top-1/2 -translate-y-1/2 text-[#c8c7be] pointer-events-none">
+                        expand_more
+                      </span>
+                      {errors.state && (
+                        <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
+                      )}
+                    </div>
+                    <div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="PIN / ZIP code"
+                          {...register("pincode")}
+                          className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
+                        />
+                        {isFetchingPincode && (
+                          <span className="absolute right-0 top-1/2 -translate-y-1/2 font-sans text-[10px] uppercase tracking-wider text-[#596244]/70">
+                            Fetching...
+                          </span>
+                        )}
+                      </div>
+                      {errors.pincode && (
+                        <p className="mt-1 text-sm text-red-600">{errors.pincode.message}</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="md:col-span-2 relative">
                     <input
                       type="tel"
-                      name="phone"
                       placeholder="Phone number"
-                      value={formData.phone}
-                      onChange={handleChange}
+                      {...register("phone")}
                       className="w-full bg-transparent border-0 border-b border-[#c8c7be] py-4 px-0 font-sans text-base focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                      required
                     />
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                    )}
                   </div>
                 </div>
 
@@ -544,18 +733,6 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
-              {/* Discount Code */}
-              <div className="flex gap-2 mb-8">
-                <input
-                  className="flex-grow bg-white border border-[#c8c7be] rounded-lg px-4 py-3 font-sans text-sm focus:border-[#596244] focus:ring-0 focus:outline-none transition-colors placeholder-stone-400 text-[#1b1c1c]"
-                  placeholder="Discount code"
-                  type="text"
-                />
-                <button className="bg-[#e5e2dd] text-[#1c1c19] px-6 py-3 rounded-lg font-sans text-sm font-medium hover:bg-stone-300 transition-colors">
-                  Apply
-                </button>
-              </div>
-
               {/* Pricing Details */}
               <div className="space-y-3 border-t border-[#c8c7be]/20 pt-6">
                 <div className="flex justify-between font-sans text-sm text-[#474741]">
@@ -621,13 +798,13 @@ export default function CheckoutPage() {
           </div>
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4">
             <Link
-              href="/"
+              href="/privacy"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/"
+              href="/terms"
               className="font-sans text-xs text-[#474741] hover:text-[#596244] transition-colors"
             >
               Terms of Service
@@ -639,7 +816,7 @@ export default function CheckoutPage() {
               Shipping Information
             </Link>
             <Link
-              href="/"
+              href="#"
               className="font-sans text-xs text-[#596244] font-semibold hover:opacity-80 transition-opacity flex items-center gap-1"
             >
               <span className="material-symbols-outlined text-[16px]">lock</span>

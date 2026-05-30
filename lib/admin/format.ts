@@ -25,7 +25,7 @@ export function formatAdminDate(iso: string): string {
 }
 
 export function orderStatusLabel(status: OrderStatus): string {
-  if (status === "pending") return "Processing";
+  if (status === "pending") return "Pending";
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 

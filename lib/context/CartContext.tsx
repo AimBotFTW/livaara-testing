@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { trackAddToCart } from "@/lib/analytics";
 
 export type CartItem = {
@@ -19,6 +19,7 @@ type CartContextType = {
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   toggleCart: (isOpen: boolean) => void;
+  clearCart: () => void;
   cartTotal: number;
 };
 
@@ -32,8 +33,31 @@ export function CartProvider({
   initialHeroProduct?: { id: string; name: string; price: number };
 }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [heroProduct] = useState(initialHeroProduct || null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("livaara_cart");
+      if (stored) {
+        setCartItems(JSON.parse(stored));
+      }
+    } catch (err) {
+      console.error("Failed to parse cart from localStorage:", err);
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem("livaara_cart", JSON.stringify(cartItems));
+    } catch (err) {
+      console.error("Failed to save cart to localStorage:", err);
+    }
+  }, [cartItems, hydrated]);
 
   const addToCart = (item: CartItem, openCart = true) => {
     trackAddToCart();
@@ -52,9 +76,11 @@ export function CartProvider({
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    setCartItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, quantity: Math.max(0, quantity) } : i)),
-    );
+    if (quantity <= 0) {
+      setCartItems((prev) => prev.filter((i) => i.id !== id));
+    } else {
+      setCartItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
+    }
   };
 
   const removeFromCart = (id: string) => {
@@ -63,6 +89,17 @@ export function CartProvider({
 
   const toggleCart = (isOpen: boolean) => {
     setIsCartOpen(isOpen);
+  };
+
+  const clearCart = () => {
+    setCartItems([]);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("livaara_cart");
+      } catch (err) {
+        console.error("Failed to clear cart from localStorage:", err);
+      }
+    }
   };
 
   const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -77,6 +114,7 @@ export function CartProvider({
         updateQuantity,
         removeFromCart,
         toggleCart,
+        clearCart,
         cartTotal,
       }}
     >

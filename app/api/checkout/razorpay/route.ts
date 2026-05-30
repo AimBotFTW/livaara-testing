@@ -3,14 +3,20 @@ import Razorpay from "razorpay";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { headers } from "next/headers";
 import { RateLimiter } from "limiter";
+import { RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET } from "@/lib/env";
 
 const limiters = new Map<string, RateLimiter>();
+const MAX_TRACKED_IPS = 5000;
 
 function getLimiter(ip: string) {
   if (limiters.size > 10000) {
     limiters.clear();
   }
   if (!limiters.has(ip)) {
+    if (limiters.size >= MAX_TRACKED_IPS) {
+      const firstKey = limiters.keys().next().value;
+      if (firstKey !== undefined) limiters.delete(firstKey);
+    }
     limiters.set(ip, new RateLimiter({ tokensPerInterval: 5, interval: "minute" }));
   }
   return limiters.get(ip)!;
@@ -37,13 +43,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing customer information" }, { status: 400 });
     }
 
-    const key_id = process.env.RAZORPAY_KEY_ID;
-    const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-    if (!key_id || !key_secret) {
-      console.error("Missing Razorpay Keys in environment variables");
-      return NextResponse.json({ error: "Payment gateway not configured" }, { status: 500 });
+    if (!/^[6-9]\d{9}$/.test(String(formData.phone || ""))) {
+      return NextResponse.json({ error: "Invalid phone number" }, { status: 400 });
     }
+
+    if (!/^[1-9]\d{5}$/.test(String(formData.pinCode || ""))) {
+      return NextResponse.json({ error: "Invalid pincode" }, { status: 400 });
+    }
+
+    const key_id = RAZORPAY_KEY_ID;
+    const key_secret = RAZORPAY_KEY_SECRET;
 
     const supabase = createAdminClient();
 

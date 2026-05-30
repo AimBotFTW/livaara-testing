@@ -130,7 +130,13 @@ export async function POST(req: Request) {
       // If payment fails or is abandoned, pg_cron will restore the inventory.
 
       // 3. Send Transactional Emails
-      const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+      const resendApiKey = process.env.RESEND_API_KEY;
+      if (!resendApiKey) {
+        console.error(
+          "[CRITICAL] RESEND_API_KEY is not configured — transactional emails will not be sent",
+        );
+      }
+      const resend = new Resend(resendApiKey ?? "");
       const customer = (Array.isArray(order.customers)
         ? order.customers[0]
         : order.customers) as unknown as { name: string; email: string };
@@ -151,6 +157,8 @@ export async function POST(req: Request) {
                 customerName: sa.firstName,
                 shippingAddress: addressString,
                 totalAmount: order.total_amount,
+                items: itemsForEmail,
+                paymentMethod: "razorpay" as const,
               }),
             ),
           });
@@ -171,6 +179,8 @@ export async function POST(req: Request) {
                   customerName: customer.name || sa.firstName,
                   customerEmail: customer.email,
                   totalAmount: order.total_amount,
+                  items: itemsForEmail,
+                  paymentMethod: "razorpay" as const,
                 }),
               ),
             });

@@ -7,6 +7,7 @@ import {
   updateOrderStatusAction,
   deleteOrderAction,
   updateOrderAction,
+  markCodAsPaid,
 } from "@/app/admin/actions";
 import type { OrderDetail } from "@/lib/admin/queries";
 import {
@@ -56,6 +57,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmCodPaid, setConfirmCodPaid] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState | null>(null);
 
   useEffect(() => {
@@ -63,6 +65,7 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
       setDetail(null);
       setIsEditing(false);
       setConfirmDelete(false);
+      setConfirmCodPaid(false);
       return;
     }
     setLoading(true);
@@ -174,6 +177,20 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
         onClose();
       } else {
         toast.error(result.error ?? "Failed to delete order");
+      }
+    });
+  };
+
+  const handleMarkCodPaid = () => {
+    if (!detail) return;
+    startTransition(async () => {
+      const result = await markCodAsPaid(detail.id);
+      if (result.success) {
+        toast.success("Payment marked as received");
+        setDetail({ ...detail, paymentStatus: "paid", orderStatus: "processing" });
+        setConfirmCodPaid(false);
+      } else {
+        toast.error(result.error ?? "Failed to mark as paid");
       }
     });
   };
@@ -296,6 +313,44 @@ export function OrderDrawer({ orderId, onClose }: OrderDrawerProps) {
                 <p className="font-body-sm text-body-sm text-stone-200 mt-xs capitalize">
                   {detail?.paymentStatus || "Unknown"}
                 </p>
+                {detail?.paymentMethod === "cod" && detail?.paymentStatus === "pending" && (
+                  <div className="mt-sm">
+                    {!confirmCodPaid ? (
+                      <button
+                        type="button"
+                        onClick={() => setConfirmCodPaid(true)}
+                        disabled={pending}
+                        className="font-button text-button uppercase px-md py-sm border border-green-500/50 text-green-400 hover:bg-green-500/10 transition-colors cursor-pointer w-full disabled:opacity-40"
+                      >
+                        Mark as Paid
+                      </button>
+                    ) : (
+                      <div className="flex flex-col gap-sm">
+                        <p className="font-body-sm text-xs text-stone-400 text-center">
+                          Confirm payment received?
+                        </p>
+                        <div className="flex gap-sm">
+                          <button
+                            type="button"
+                            onClick={handleMarkCodPaid}
+                            disabled={pending}
+                            className="flex-1 font-button text-button uppercase px-sm py-sm border border-green-500 bg-green-500 text-black hover:bg-green-500/90 transition-colors cursor-pointer disabled:opacity-40"
+                          >
+                            {pending ? "..." : "Yes, mark paid"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmCodPaid(false)}
+                            disabled={pending}
+                            className="flex-1 font-button text-button uppercase px-sm py-sm border border-stone-800 text-stone-400 hover:text-stone-200 hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-40"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </section>
 
               <section className="border border-stone-800 p-lg bg-black">
