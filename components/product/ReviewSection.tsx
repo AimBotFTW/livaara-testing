@@ -77,9 +77,7 @@ export async function ReviewSection({ productId }: ReviewSectionProps) {
                 </div>
                 <div className="flex items-center border-t border-[#E8D4B0] pt-4 mt-auto">
                   <div className="text-sm font-medium text-stone-900 mr-3">
-                    {review.customer_id
-                      ? `User ${review.customer_id.substring(0, 4)}`
-                      : "Anonymous"}
+                    {review.reviewer_name || "Anonymous"}
                   </div>
                   {review.is_verified_purchase && (
                     <div className="flex items-center text-[#D4AF37] text-xs font-semibold bg-[#F7F3EC] px-2 py-1 border border-[#E8D4B0]">

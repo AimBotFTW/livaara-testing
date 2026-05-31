@@ -84,7 +84,7 @@ export function Footer() {
       </div>
       <div className="border-t border-primary-foreground/15">
         <div className="container-px mx-auto max-w-7xl py-6 flex flex-col sm:flex-row justify-between gap-3 text-xs text-primary-foreground/60">
-          <p>© 2025 LIVAARA. All rights reserved.</p>
+          <p>© 2026 LIVAARA. All rights reserved.</p>
           <p className="italic">Crafted with intention. Delivered with care.</p>
         </div>
       </div>
